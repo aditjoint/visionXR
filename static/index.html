@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADAM Consult • VisionXR AI Command Center</title>
+  <link rel="stylesheet" href="/static/css/visionxr-v248.css?v=262">
+  <link rel="icon" type="image/png" href="/static/images/favicon.png">
+
+  <link rel="shortcut icon" href="/static/images/favicon.ico">
+</head>
+<body>
+
+  <!-- Sovereign Full-Screen Authentication Lock Screen -->
+  <div id="auth-lock-overlay" class="auth-lock-overlay" style="display: flex;">
+    <div class="auth-lock-card">
+      <div style="text-align: center; margin-bottom: 0.8rem;">
+        <img src="/static/images/logo-icon.png" alt="ADAM Consult" style="height: 60px; width: auto; object-fit: contain; margin-bottom: 0.4rem;" />
+        <div id="login-company-name" style="font-size: 1.15rem; font-weight: 800; color: #ffffff; letter-spacing: 0.04em;">SOVEREIGN ENTERPRISE NODE</div>
+        <div style="font-size: 0.72rem; color: var(--color-cyan); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; margin-top: 0.25rem; white-space: nowrap;">
+          VisionXR Sovereign AI Command Portal • Sector 22
+        </div>
+      </div>
+
+      <div id="auth-error-banner" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--color-red); color: #fca5a5; font-size: 0.75rem; padding: 0.5rem; border-radius: 6px;"></div>
+
+      <div class="auth-input-group">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">OPERATOR / USERNAME:</label>
+        <input id="auth-username" type="text" class="auth-input" value="" placeholder="Enter Username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter') submitLogin()" />
+      </div>
+
+      <div class="auth-input-group">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">SECRET / PASSWORD:</label>
+        <input id="auth-secret" type="password" class="auth-input" value="" placeholder="Enter Password or Passkey" autocomplete="new-password" onkeydown="if(event.key==='Enter') submitLogin()" />
+      </div>
+
+      <button class="btn btn-cyan" style="width: 100%; padding: 0.75rem; font-size: 0.88rem; justify-content: center; margin-top: 0.5rem;" onclick="submitLogin()">
+        🔓 AUTHENTICATE & UNLOCK PORTAL
+      </button>
+
+      <div style="margin-top: 0.6rem; text-align: center;">
+        <a href="javascript:void(0)" onclick="openResetPasswordModal()" style="font-size: 0.74rem; color: var(--color-cyan); text-decoration: underline; font-weight: 600;">
+          🔑 Forgot / Reset Password with 6-Digit Code?
+        </a>
+      </div>
+
+      <div style="font-size: 0.68rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.6rem; line-height: 1.4;">
+        🔒 <b>Authorized Clearance Required</b><br>
+        Access to live CCTV feeds, AI inference engine, and safety governance is cryptographically logged in the SHA-256 audit ledger.
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand-section">
+      <div class="brand-title" onclick="openUserGovernanceModal()" style="cursor: pointer; display: flex; align-items: center; gap: 0.6rem;" title="ADAM Consult Sovereign Portal">
+        <img src="/static/images/logo-full-dark.png" alt="ADAM Consult" style="height: 26px; width: auto; object-fit: contain;" />
+        <span class="brand-sector">VISIONXR • SECTOR 22</span>
+      </div>
+      <button id="curfew-indicator" class="btn btn-compact btn-warning" style="display: none;" onclick="openSafetyRulesModal()" title="Scheduled Night Curfew Active (20:00 - 06:00) • Click to Configure Rules">🌙 CURFEW ACTIVE</button>
+    </div>
+
+    <!-- Cluster 1: Master Engine & Sound Control -->
+    <div class="header-cluster">
+      <button id="btn-engine-toggle" class="btn btn-compact btn-danger" onclick="toggleEngineState()" title="Master Start/Stop Switch for Surveillance & AI Analytics">
+        <span class="btn-icon">⏹️</span> STOP
+      </button>
+      <button id="btn-silence" class="btn btn-compact btn-warning" onclick="toggleSilence()" title="Audio Alarm State: Click to Arm or Silence Sirens">
+        <span class="btn-icon">🔕</span> SILENCED
+      </button>
+      <button id="btn-audio-mute" class="btn btn-compact btn-danger" onclick="toggleAudioMute()" title="Audio Sound Muted - Click to Enable Sounds">
+        <span class="btn-icon">🔇</span> MUTED
+      </button>
+      <button id="btn-admin-login" class="btn btn-compact btn-cyan" onclick="openAdminLoginModal()" title="Super Admin Identity, Engine State & Clearance">
+        <span class="btn-icon">🔐</span> ADMIN
+      </button>
+      <button class="btn btn-compact btn-cyan" onclick="openUserGovernanceModal()" title="User Governance: Profiles, Clearance Levels, Password Management">
+        <span class="btn-icon">👥</span> USERS
+      </button>
+      <button class="btn btn-compact btn-danger" onclick="handleLogout()" title="Log Out & Lock Command Terminal">
+        <span class="btn-icon">🚪</span> LOGOUT
+      </button>
+      <button class="btn btn-compact btn-warning" onclick="openSafetyRulesModal()" title="Super Admin Safety Rules: Thresholds for Workers & Objects">
+        <span class="btn-icon">⚙️</span> RULES
+      </button>
+      <button id="btn-toggle-ppe" class="btn btn-compact btn-cyan" onclick="togglePPEEnforcement()" title="Super Admin PPE Compliance Master Switch (ON / OFF)" style="font-weight: 700;">
+        <span class="btn-icon">🦺</span> <span id="btn-toggle-ppe-text">PPE: ON</span>
+      </button>
+      <button class="btn btn-compact btn-danger" onclick="triggerSubsystemReset()" title="Reset Camera Subsystem (Re-initialize V4L2 & Pipeline without clearing logs)" style="font-weight: 700; border-color: #ef4444; background: rgba(239, 68, 68, 0.25);">
+        <span class="btn-icon">🔄</span> RESET
+      </button>
+      <button class="btn btn-compact btn-breakglass" onclick="openBreakGlassModal()" title="Emergency Sovereign Clearance Override">
+        <span class="btn-icon">⚡</span> BREAK-GLASS
+      </button>
+      <button class="btn btn-compact btn-danger" onclick="handleLogout()" title="Terminate Sovereign Session">
+        <span class="btn-icon">🚪</span> LOGOUT
+      </button>
+    </div>
+
+    <!-- Cluster 2: Rapid SecOps Interlocks -->
+    <div class="header-cluster">
+      <button id="btn-siren" class="btn btn-compact btn-danger" onclick="toggleSiren()" title="Audible SecOps Facility Siren">
+        <span class="btn-icon">🔔</span> SIREN
+      </button>
+      <button id="btn-lockdown" class="btn btn-compact btn-danger" onclick="toggleLockdown()" title="Facility Isolation Lockdown Protocol">
+        <span class="btn-icon">🛡️</span> LOCKDOWN
+      </button>
+      <button class="btn btn-compact btn-cyan" onclick="togglePrivacy()" title="DPDP/GDPR Facial & Identity Privacy Blur">
+        <span class="btn-icon">👁️</span> BLUR
+      </button>
+      <button class="btn btn-compact btn-warning" onclick="testWhatsApp()" title="Instant WhatsApp Emergency Escalation (+91-8779639965)">
+        <span class="btn-icon">📲</span> WA
+      </button>
+      <button id="btn-pa-broadcast" class="btn btn-compact btn-warning" onclick="openPAModal()" title="Public Address (PA) Facility Broadcast & Push-To-Talk" style="font-weight: 700; border-color: var(--color-amber);">
+        <span class="btn-icon">📢</span> PA TALK
+      </button>
+    </div>
+
+    <!-- Cluster 3: Infrastructure, Hardware & Governance -->
+    <div class="header-cluster">
+      <button class="btn btn-compact btn-cyan" onclick="openANPRModal()" title="ANPR: Vehicle Number Plate Recognition, Speed & Watchlists">
+        <span class="btn-icon">🚘</span> ANPR
+      </button>
+      <button class="btn btn-compact btn-cyan" onclick="openBiometricsModal()" title="FRSS: Facial Biometrics, Personnel Directory & Mask Compliance">
+        <span class="btn-icon">👤</span> FRSS
+      </button>
+      <button class="btn btn-compact btn-warning" onclick="openAnalyticsModal()" title="Spatial Analytics: People Counting, Crowd Density & Attribute Search">
+        <span class="btn-icon">📊</span> ANALYTICS
+      </button>
+      <button class="btn btn-compact" onclick="openIPModal()" title="VisionXR Sovereign IP Guard & Whitelist">
+        <span class="btn-icon">🌐</span> IP GUARD
+      </button>
+      <button class="btn btn-compact" onclick="openSnifferModal()" title="Network & Device Hardware Sniffer">
+        <span class="btn-icon">📡</span> SNIFFER
+      </button>
+      <button class="btn btn-compact" onclick="openAuditModal()" title="SHA-256 Tamper-Proof Audit Ledger">
+        <span class="btn-icon">📜</span> AUDIT
+      </button>
+      <button class="btn btn-compact btn-cyan" onclick="openStorageModal()" title="NVMe Boot Partition Storage Governor (100MB Ceiling)">
+        <span class="btn-icon">💾</span> NVME
+      </button>
+      <button class="btn btn-compact btn-warning" onclick="openLicenseModal()" title="Camera Licensing & AI Workload Assignment">
+        <span class="btn-icon">🔑</span> LICENSE
+      </button>
+      <button class="btn btn-compact" id="btn-open-distribution" onclick="openDistributionModal()" title="Client USB Distribution Builder (Custom Features & Hardening)" style="background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #d8b4fe;">
+        <span class="btn-icon">📦</span> USB EXPORT
+      </button>
+    </div>
+
+  </header>
+
+
+  <!-- App Layout -->
+  <div class="app-container">
+    
+    <!-- Left Sidebar: Channels & Audio Controls -->
+    <aside class="sidebar-left">
+      <div class="sidebar-section">
+        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+          <span>CHANNELS</span>
+          <div style="display: flex; gap: 0.25rem; align-items: center;">
+            <span id="channels-count-badge" class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 4px;">4/32</span>
+            <button id="btn-hdr-collapse-left" onclick="toggleLeftSidebar()" class="btn btn-compact" style="padding: 1px 5px; font-size: 0.65rem;" title="Collapse Channels Sidebar">◀</button>
+          </div>
+
+        </div>
+
+        <div id="camera-channels-list">
+          <!-- Populated dynamically from live hardware channels -->
+        </div>
+
+        <div style="display: flex; gap: 0.3rem; margin-top: 0.4rem;">
+          <button class="btn btn-cyan" style="font-size: 0.68rem; padding: 3px 6px; flex: 1; font-weight: 600;" onclick="openProvisionModal()">➕ ADD FEED</button>
+          <button class="btn btn-danger" style="font-size: 0.68rem; padding: 3px 6px;" onclick="openDeprovisionModal()">✕ RETIRE</button>
+          <button class="btn btn-warning" style="font-size: 0.68rem; padding: 3px 6px;" onclick="triggerSubsystemReset()" title="Re-sync camera hardware">🔄</button>
+        </div>
+      </div>
+
+
+      <!-- Industrial Disasters & ESD Interlock -->
+      <div class="sidebar-section">
+        <div class="section-title">
+          <span>DISASTER RADAR</span>
+          <span class="badge badge-red" id="esd-status-badge" style="font-size: 0.62rem; padding: 1px 4px;">ESD READY</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem;">
+          <button class="btn btn-compact btn-danger" style="font-size: 0.64rem; padding: 2px 4px; justify-content: center;" onclick="triggerDisaster('ACID_FUMING_SPILL')">☣️ Acid</button>
+          <button class="btn btn-compact btn-warning" style="font-size: 0.64rem; padding: 2px 4px; justify-content: center;" onclick="triggerDisaster('TOXIC_GAS_PLUME')">💨 Gas</button>
+          <button class="btn btn-compact btn-cyan" style="font-size: 0.64rem; padding: 2px 4px; justify-content: center;" onclick="triggerDisaster('PIPE_BURST_FLOOD')">🌊 Flood</button>
+          <button class="btn btn-compact btn-danger" style="font-size: 0.64rem; padding: 2px 4px; justify-content: center;" onclick="triggerDisaster('THERMAL_RUNAWAY')">🔥 Runaway</button>
+        </div>
+      </div>
+
+      <!-- Multi-Channel Offload Status -->
+      <div class="sidebar-section" style="padding: 0.4rem 0.65rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--text-muted);">
+          <span>OFFLOADER PROXY</span>
+          <span class="badge badge-cyan" id="hud-offload" style="font-size: 0.62rem; padding: 1px 4px;">0% SAVED</span>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- Center Stage: Multi-Camera Grid & Canvas Overlay -->
+    <main class="stage-main">
+      <div class="stage-toolbar">
+        <div class="view-controls" style="display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap;">
+          <button id="btn-toggle-sidebar" class="btn btn-compact" onclick="toggleLeftSidebar()" title="Toggle Channels Sidebar (Expand Video Grid)">◀ CHANNELS</button>
+          <button class="btn btn-compact btn-cyan" onclick="openProvisionModal()" title="Add / Provision Additional Camera Feed">➕ ADD FEED</button>
+          <button class="btn btn-compact" onclick="setLayout('grid-1x1')">1x1</button>
+          <button class="btn btn-compact" onclick="setLayout('grid-2x2')">2x2 QUAD</button>
+
+          <button class="btn btn-compact" onclick="setLayout('grid-3x3')">3x3</button>
+          <button class="btn btn-compact" onclick="setLayout('grid-auto')">AUTO</button>
+          <button id="btn-toggle-editor" class="btn btn-compact btn-cyan" onclick="toggleZoneEditor()">📐 TRI-ZONES</button>
+          <span id="zone-editor-controls" style="display: inline-flex; gap: 0.25rem; align-items: center;">
+            <button id="btn-toolbar-green" class="btn btn-compact badge-green" onclick="setDrawType('green')" title="Draw Green Safe Corridor Zone">🟢 GREEN</button>
+            <button id="btn-toolbar-amber" class="btn btn-compact badge-amber" onclick="setDrawType('amber')" title="Draw Amber Cautionary Buffer Perimeter">🟡 AMBER</button>
+            <button id="btn-toolbar-red" class="btn btn-compact badge-red" onclick="setDrawType('red')" title="Draw Red High-Hazard Zero-Tolerance Zone">🔴 RED</button>
+            <button class="btn btn-compact btn-cyan" onclick="saveCurrentZone()" title="Save current polygon">💾 SAVE</button>
+            <button class="btn btn-compact btn-warning" onclick="clearAllZones()" title="Clear all spatial polygons on the focused camera">🧹 CLEAR</button>
+          </span>
+          <button id="btn-toggle-telemetry" class="btn btn-compact" onclick="toggleRightSidebar()" title="Toggle Telemetry Sidebar (Expand Video Grid)">EVENTS ▶</button>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">
+
+          TARGET: <span id="editor-target-cam" style="color: var(--color-cyan); font-weight: bold;">CAM_01</span>
+        </div>
+      </div>
+
+      <div id="grid-viewport" class="grid-viewport grid-2x2">
+        <!-- CAM 01 -->
+        <div id="cell-cam_01" class="cam-cell focus-active">
+          <img class="cam-video" src="/api/stream/cam_01/mjpeg" alt="CAM 01" onerror="handleStreamError(this, 'cam_01')" />
+          <canvas id="canvas-cam_01" class="cam-canvas"></canvas>
+          <div class="osd-overlay">
+            <div class="osd-live-tag"><div class="live-dot"></div> CAM 01 • OPTICAL USB #1 (SONY PS EYE)</div>
+            <span>30 FPS • REAL-TIME</span>
+          </div>
+        </div>
+
+        <!-- CAM 02 -->
+        <div id="cell-cam_02" class="cam-cell">
+          <img class="cam-video" src="/api/stream/cam_02/mjpeg" alt="CAM 02" onerror="handleStreamError(this, 'cam_02')" />
+          <canvas id="canvas-cam_02" class="cam-canvas"></canvas>
+          <div class="osd-overlay">
+            <div class="osd-live-tag"><div class="live-dot"></div> CAM 02 • OPTICAL LIVE (WEBCAM)</div>
+            <span>30 FPS • REAL-TIME</span>
+          </div>
+        </div>
+
+        <!-- CAM 03 -->
+        <div id="cell-cam_03" class="cam-cell">
+          <img class="cam-video" src="/api/stream/cam_03/mjpeg" alt="CAM 03" onerror="handleStreamError(this, 'cam_03')" />
+          <canvas id="canvas-cam_03" class="cam-canvas"></canvas>
+          <div class="osd-overlay">
+            <div class="osd-live-tag" style="background: rgba(40,50,65,0.7);"><div class="live-dot" style="background: var(--color-amber);"></div> CAM 03 • PHYSICAL STANDBY</div>
+            <span style="color: var(--text-muted);">AWAITING RTSP</span>
+          </div>
+        </div>
+
+        <!-- CAM 04 -->
+        <div id="cell-cam_04" class="cam-cell">
+          <img class="cam-video" src="/api/stream/cam_04/mjpeg" alt="CAM 04" onerror="handleStreamError(this, 'cam_04')" />
+          <canvas id="canvas-cam_04" class="cam-canvas"></canvas>
+          <div class="osd-overlay">
+            <div class="osd-live-tag" style="background: rgba(40,50,65,0.7);"><div class="live-dot" style="background: var(--color-amber);"></div> CAM 04 • PHYSICAL STANDBY</div>
+            <span style="color: var(--text-muted);">AWAITING RTSP</span>
+          </div>
+        </div>
+
+      </div> <!-- end grid-viewport -->
+
+      <!-- Floating Interactive Zone Editor Palette -->
+      <div id="editor-palette" class="editor-palette" style="display: none;">
+        <span id="zone-editor-pts-badge" style="font-size: 0.75rem; color: #fff; font-family: monospace; padding: 0.2rem 0.5rem; background: rgba(0,0,0,0.5); border-radius: 4px; display: flex; align-items: center;">Points: 0</span>
+        <button id="btn-draw-green" class="btn badge-green zone-draw-btn" onclick="setDrawType('green')">🟢 Green Zone</button>
+        <button id="btn-draw-amber" class="btn badge-amber zone-draw-btn" onclick="setDrawType('amber')">🟡 Amber Zone</button>
+        <button id="btn-draw-red" class="btn badge-red zone-draw-btn active" onclick="setDrawType('red')">🔴 Red Zone</button>
+        <button class="btn btn-cyan" onclick="saveCurrentZone()">💾 Save Polygon</button>
+        <button class="btn btn-danger" onclick="clearAllZones()">🗑️ Clear All Zones</button>
+        <button class="btn" onclick="resetZones()">↺ Factory Presets</button>
+      </div>
+    </main>
+
+    <!-- Right Sidebar: HUD & Alert Timeline -->
+    <aside class="sidebar-right">
+      <!-- Live Metrics HUD -->
+      <div class="sidebar-section">
+        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <span>TELEMETRY</span>
+          <button id="btn-hdr-collapse-right" onclick="toggleRightSidebar()" class="btn btn-compact" style="padding: 1px 5px; font-size: 0.65rem;" title="Collapse Telemetry Sidebar">▶</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; margin-bottom: 0.25rem;">
+          <div class="telemetry-pill">
+            <span class="telemetry-lbl">WORKERS</span>
+            <span id="hud-workers" class="telemetry-val" style="color: var(--color-cyan);">0</span>
+          </div>
+          <div class="telemetry-pill">
+            <span class="telemetry-lbl">PPE</span>
+            <span id="hud-ppe" class="telemetry-val" style="color: var(--text-muted);">N/A</span>
+          </div>
+          <div class="telemetry-pill" onclick="openANPRModal()" style="cursor: pointer;" title="View ANPR Intelligence">
+            <span class="telemetry-lbl">ANPR</span>
+            <span id="hud-anpr" class="telemetry-val" style="color: var(--color-amber);">ACTIVE</span>
+          </div>
+          <div class="telemetry-pill" onclick="openAnalyticsModal()" style="cursor: pointer;" title="View Occupancy">
+            <span class="telemetry-lbl">OCCUPANCY</span>
+            <span id="hud-occupancy" class="telemetry-val" style="color: var(--color-cyan);">0/0</span>
+          </div>
+          <div class="telemetry-pill">
+            <span class="telemetry-lbl">VIOLATIONS</span>
+            <span id="hud-violations" class="telemetry-val" style="color: var(--color-green);">0</span>
+          </div>
+          <div class="telemetry-pill">
+            <span class="telemetry-lbl">AUDIO</span>
+            <span id="hud-acoustic" class="telemetry-val" style="color: var(--text-muted);">0.0dB</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Live Alerts Timeline -->
+      <div class="sidebar-section" style="flex: 1; display: flex; flex-direction: column; padding: 0.45rem 0.6rem;">
+        <div class="section-title" style="margin-bottom: 0.35rem;">
+          <span>ANOMALY & EVENT BUS</span>
+          <span class="badge badge-red" style="font-size: 0.62rem; padding: 1px 4px;">LIVE</span>
+        </div>
+        <div id="alerts-feed" style="flex: 1; overflow-y: auto;">
+          <!-- Live alerts stream here -->
+        </div>
+      </div>
+    </aside>
+
+
+  </div>
+
+  <!-- Modal: Break-Glass Elevation -->
+  <div id="modal-breakglass" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚡ Break-Glass Emergency Access Elevation</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Emergency break-glass elevates permissions to <strong>Clearance L4 Sovereign</strong> for high-hazard containment, fire, or severe security breach.
+        </p>
+        <label style="font-size: 0.78rem; color: var(--text-muted);">Operational Justification:</label>
+        <textarea id="bg-reason" class="btn" style="width: 100%; height: 80px; margin-top: 0.4rem; padding: 0.5rem; text-align: left;" placeholder="E.g., Transformer arc-flash containment, personnel rescue dispatch..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-danger" onclick="submitBreakGlass()">Authorize Elevation (15 Mins)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Public Address (PA) & Voice Intercom -->
+  <div id="modal-pa-broadcast" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.3);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.3rem;">📢</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1rem; color: #ffffff;">Public Address (PA) Facility Voice Broadcast</h3>
+            <span style="font-size: 0.68rem; color: var(--color-amber);">Sector 22 Sovereign Intercom • Direct Facility Speaker Output</span>
+          </div>
+        </div>
+        <button class="btn btn-compact" onclick="closeModals()">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        
+        <!-- Target Selection -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">BROADCAST ZONE:</div>
+          <select id="pa-target-zone" class="btn btn-compact" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: var(--bg-surface); color: var(--color-cyan); font-weight: 700; border: 1px solid var(--color-cyan);">
+            <option value="FACILITY_WIDE">🔊 Facility-Wide (All Shop-Floor Speakers)</option>
+            <option value="CAM_01_WORKSTATION">Workstation 1 (Sony PS Eye Workstation)</option>
+            <option value="CAM_02_SECONDARY">Secondary Optical Zone (Webcam Area)</option>
+            <option value="LOADING_BAY_PERIMETER">Perimeter Loading Bay (Chutes / Belts)</option>
+          </select>
+        </div>
+
+        <!-- Mode 1: Push-To-Talk Microphone -->
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 1rem; text-align: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <div style="font-size: 0.72rem; color: var(--color-cyan); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+              🎙️ MODE 1: LIVE VOICE (BROWSER MIC)
+            </div>
+            <div id="ptt-mic-status" style="font-size: 0.68rem; font-weight: 700; font-family: monospace; color: var(--color-amber);">
+              ● CHECKING MIC...
+            </div>
+          </div>
+
+          <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+            Click once to start talking (or hold down). Real-time voice streams directly through physical facility speakers.
+          </p>
+
+          <!-- Real-Time Voice Audio Level Meter -->
+          <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; margin: 0 0 0.8rem 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);">
+            <div id="ptt-vu-meter" style="width: 0%; height: 100%; background: var(--color-green); transition: width 0.04s ease;"></div>
+          </div>
+
+          <button id="btn-ptt-mic" class="btn" style="width: 100%; height: 56px; border-radius: 28px; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.03em; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); cursor: pointer; transition: all 0.15s ease; user-select: none;">
+            <span id="ptt-status-text">🎙️ HOLD OR CLICK TO TALK (PUSH-TO-TALK)</span>
+          </button>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem;">
+            <div id="ptt-feedback-bar" style="font-size: 0.72rem; color: var(--text-muted); text-align: left; flex: 1;">
+              Ready to broadcast. Click or hold button to talk.
+            </div>
+            <button class="btn btn-compact" onclick="checkOrRequestMic()" style="font-size: 0.65rem; padding: 0.15rem 0.4rem; white-space: nowrap;">
+              🎤 Enable / Test Mic
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode 2: Emergency Text-to-Speech (TTS) Announcement -->
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.72rem; color: var(--color-amber); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.4rem; text-transform: uppercase;">
+            📢 MODE 2: EMERGENCY TEXT-TO-SPEECH (TTS) ANNOUNCEMENT
+          </div>
+          <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+            Type custom announcement or click safety preset below. Broadcasts industrial chime tone + voice alert.
+          </p>
+
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;">
+            <button class="btn btn-compact badge-red" onclick="setPAPreset('Attention all personnel: High-hazard Red Zone perimeter breach detected. Clear the area immediately!')">🚨 Clear Red Zone</button>
+            <button class="btn btn-compact badge-amber" onclick="setPAPreset('Safety compliance reminder: High-visibility safety vests and helmets are mandatory in Sector 22.')">🦺 PPE Compliance</button>
+            <button class="btn btn-compact btn-warning" onclick="setPAPreset('Attention: Continuous conveyor belt material flow stoppage detected. Technicians dispatched.')">⚠️ Conveyor Jam</button>
+            <button class="btn btn-compact btn-danger" onclick="setPAPreset('Facility emergency alert: Evacuate Sector 22 immediately through marked emergency exits.')">🏃 Evacuation</button>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <input id="pa-tts-input" type="text" class="btn" style="flex: 1; text-align: left; padding: 0.45rem 0.7rem; font-size: 0.8rem; background: var(--bg-surface); border: 1px solid var(--border-accent);" placeholder="Type broadcast message (e.g., Attention: shift handover in 5 minutes)..." />
+            <button class="btn btn-warning" onclick="broadcastTTSAnnouncement()" style="font-weight: 700; padding: 0.45rem 0.9rem; font-size: 0.78rem; white-space: nowrap;">
+              📢 BROADCAST
+            </button>
+          </div>
+          <div id="tts-feedback-bar" style="margin-top: 0.5rem; font-size: 0.72rem; color: var(--text-muted); min-height: 16px;"></div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">HARDWARE AUDIO: ALC255 (plughw:0,0) • 22.05 kHz MONO</span>
+        <button class="btn btn-compact" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: IP Protection & Guard -->
+  <div id="modal-ip" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🌐 VisionXR Sovereign IP Protection & Whitelist</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 1rem;">
+          <strong>Threats Blocked:</strong> <span id="ip-threats" class="badge badge-red">0</span>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Trusted Whitelist:</strong>
+          <div id="ip-whitelist-list" style="font-family: monospace; font-size: 0.8rem; background: var(--bg-card); padding: 0.5rem; border-radius: 4px; margin-top: 0.3rem;"></div>
+        </div>
+        <div>
+          <strong>Active Blacklist:</strong>
+          <div id="ip-blacklist-list" style="font-family: monospace; font-size: 0.8rem; background: var(--bg-card); padding: 0.5rem; border-radius: 4px; margin-top: 0.3rem;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cyan" onclick="addWhitelistIP()">+ Add Whitelist IP</button>
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: CCTV Sniffer & Discovery -->
+  <div id="modal-sniffer" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📡 CCTV Network Discovery & Port Sniffer</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" id="sniffer-results">
+        <!-- Results populated via API -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cyan" onclick="openSnifferModal()">🔄 Rescan Subnet</button>
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cryptographic Audit Ledger -->
+  <div id="modal-audit" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📜 Sovereign SHA-256 Chained Audit Ledger</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="audit-entries" style="max-height: 400px; overflow-y: auto;">
+          <!-- Populated via API -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cyan" onclick="verifyAuditChain()">🛡️ Verify SHA-256 Integrity</button>
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Super Admin Feed Provisioning -->
+  <div id="modal-provision" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📹 Super Admin Camera Feed Provisioning</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Live Quota Status Indicator -->
+        <div id="prov-quota-banner" style="background: rgba(6, 182, 212, 0.08); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">
+            Surveillance Quota: <b id="prov-active-count" style="color: var(--color-cyan);">4</b> / <b id="prov-max-quota" style="color: var(--color-green);">4</b> Active Channels
+          </span>
+          <button id="btn-quick-elevate" class="btn btn-compact btn-warning" type="button" onclick="quickElevateQuota()" title="Instant Super Admin Capacity Elevation">⚡ Elevate Quota (+4)</button>
+        </div>
+
+        <!-- Live Physical Hardware Device Auto-Discovery -->
+        <div id="prov-discovered-box" style="margin-bottom: 0.75rem; background: rgba(34, 197, 94, 0.08); border: 1px solid var(--color-green); border-radius: 6px; padding: 0.6rem 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="font-size: 0.74rem; font-weight: bold; color: var(--color-green);">🔌 DETECTED HARDWARE / USB CAMERAS:</label>
+            <button class="btn btn-compact" type="button" onclick="refreshDiscoveredDevices('prov')" style="font-size: 0.7rem; padding: 2px 6px;">🔄 Rescan Devices</button>
+          </div>
+          <select id="prov-discovered-select" class="btn" style="width: 100%; text-align: left; background: var(--bg-card); color: var(--text-primary);" onchange="selectDiscoveredDevice(this.value, 'prov')">
+            <option value="">-- Scanning for connected USB video devices... --</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">QUICK TEMPLATES (CLICK TO PREFILL):</label>
+          <div style="display: flex; gap: 0.4rem;">
+            <button class="btn btn-compact btn-cyan" type="button" onclick="applyProvisionPreset('usb')">📷 USB / V4L2 Device</button>
+            <button class="btn btn-compact btn-warning" type="button" onclick="applyProvisionPreset('rtsp')">🌐 Industrial RTSP IP Dome</button>
+            <button class="btn btn-compact" type="button" onclick="applyProvisionPreset('phone')">📱 Mobile / Web Stream</button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Camera Channel ID:</label>
+            <input id="prov-id" class="btn" style="width: 100%; text-align: left;" placeholder="cam_05" />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Display Name:</label>
+            <input id="prov-name" class="btn" style="width: 100%; text-align: left;" placeholder="Road side / Main Gate" />
+          </div>
+        </div>
+        <div style="margin-bottom: 0.75rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Physical / IP Stream Source URL:</label>
+          <input id="prov-source" class="btn" style="width: 100%; text-align: left;" placeholder="rtsp://192.168.33.1:554/live or /dev/video0" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Location Tag:</label>
+            <input id="prov-location" class="btn" style="width: 100%; text-align: left;" placeholder="Sector 22 • Perimeter Road" />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Protocol Type:</label>
+            <select id="prov-type" class="btn" style="width: 100%;">
+              <option value="rtsp">RTSP (Real Time Streaming)</option>
+              <option value="onvif">ONVIF (Profile S/T)</option>
+              <option value="usb_v4l2">USB V4L2 Device (/dev/video*)</option>
+              <option value="http">HTTP-FLV / MJPEG</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-cyan" onclick="submitProvisionCamera()">Authorize & Provision Feed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Super Admin Feed Deprovisioning -->
+  <div id="modal-deprovision" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🗑️ Super Admin Camera Feed Deprovisioning</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.8rem;">
+          Deprovisioning permanently releases the RTSP/ONVIF decode pipeline, archives video telemetry, and tears down offload channels.
+        </p>
+        <div style="margin-bottom: 0.75rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Select Target Camera:</label>
+          <select id="deprov-cam-select" class="btn" style="width: 100%;">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Mandatory Governance Justification:</label>
+          <input id="deprov-reason" class="btn" style="width: 100%; text-align: left;" placeholder="E.g., Decommissioned / Scheduled hardware overhaul" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-danger" onclick="submitDeprovisionCamera()">Confirm Deprovision</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Reconfigure Camera Feed -->
+  <div id="modal-edit-camera" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="edit-cam-title">⚙️ Reconfigure Camera Feed</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-cam-id" />
+        <div id="edit-discovered-box" style="margin-bottom: 0.75rem; background: rgba(6, 182, 212, 0.08); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.6rem 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="font-size: 0.74rem; font-weight: bold; color: var(--color-cyan);">🔌 ASSIGN DETECTED HARDWARE / USB CAMERA:</label>
+            <button class="btn btn-compact" type="button" onclick="refreshDiscoveredDevices('edit')" style="font-size: 0.7rem; padding: 2px 6px;">🔄 Rescan Devices</button>
+          </div>
+          <select id="edit-discovered-select" class="btn" style="width: 100%; text-align: left; background: var(--bg-card); color: var(--text-primary);" onchange="selectDiscoveredDevice(this.value, 'edit')">
+            <option value="">-- Select detected USB camera or keep current source --</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Display Name:</label>
+            <input id="edit-cam-name" class="btn" style="width: 100%; text-align: left;" />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Protocol Type:</label>
+            <select id="edit-cam-type" class="btn" style="width: 100%;">
+              <option value="usb_v4l2">USB V4L2 Device (/dev/video*)</option>
+              <option value="rtsp">RTSP (Real Time Streaming)</option>
+              <option value="onvif">ONVIF (Profile S/T)</option>
+              <option value="http">HTTP-FLV / MJPEG</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Source (Device index /dev/video* or RTSP/HTTP URL):</label>
+          <input id="edit-cam-source" class="btn" style="width: 100%; text-align: left;" />
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Location Tag:</label>
+          <input id="edit-cam-location" class="btn" style="width: 100%; text-align: left;" />
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button class="btn btn-danger" onclick="quickDeprovisionFromEdit()">🗑️ Deprovision Feed</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" onclick="closeModals()">Cancel</button>
+          <button class="btn btn-cyan" onclick="submitEditCamera()">Save & Reconnect Feed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal: Storage Governance & Quota Control -->
+  <div id="modal-storage" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💾 Storage Governance & NVMe Boot Quota Controller</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--color-green); padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+          <strong style="color: var(--color-green);">✓ ROOT PARTITION PROTECTED:</strong>
+          <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            Logs, audit seals & snapshots are stored on the <strong>365GB NVMe Boot Partition (/boot on nvme0n1p3)</strong>. The developer machine root partition is completely isolated.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <div style="background: var(--bg-card); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.7rem; color: var(--text-muted);">CURRENT STORAGE CONSUMPTION</div>
+            <div id="storage-used-mb" style="font-size: 1.4rem; font-weight: 700; color: var(--color-cyan);">2.6 MB</div>
+            <div id="storage-quota-label" style="font-size: 0.72rem; color: var(--text-muted);">Quota Limit: 100.0 MB</div>
+          </div>
+          <div style="background: var(--bg-card); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.7rem; color: var(--text-muted);">STORAGE UTILIZATION</div>
+            <div id="storage-used-pct" style="font-size: 1.4rem; font-weight: 700; color: var(--color-green);">2.6%</div>
+            <div id="storage-snapshot-count" style="font-size: 0.72rem; color: var(--text-muted);">Snapshots: 0 files</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="background: #1e293b; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 1rem;">
+          <div id="storage-progress-bar" style="background: var(--color-cyan); width: 2.6%; height: 100%;"></div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.78rem; color: var(--text-muted);">Adjust Strict Quota Limit (Developer Machine Ceiling):</label>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+            <input id="input-quota-mb" type="number" class="btn" style="width: 140px; text-align: left;" value="100" min="10" max="1000" />
+            <button class="btn btn-cyan" onclick="updateStorageQuota()">Update Quota</button>
+            <button class="btn btn-danger" onclick="triggerManualPrune()">🧹 Prune Old Evidence Now</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Super Admin Safety & Alarm Parameter Governance -->
+  <div id="modal-safety-rules" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3>⚙️ Super Admin Safety & Alarm Parameter Governance Portal</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh;">
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Configure strict operational thresholds for Subject (Worker/Personnel) and Object (Machinery/Hazards) triggers. Changes are sealed with SHA-256 cryptographic audit logs.
+        </p>
+
+        <!-- Section 1: Subject (Human / Worker) Rules -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.85rem; color: var(--color-cyan); margin-bottom: 0.6rem;">👤 SUBJECT (HUMAN & WORKER) ALARM PARAMETERS</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Amber Zone Max Dwell (Loitering Sec):</label>
+              <input id="rule-amber-dwell" type="number" step="0.5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Red Hazard Grace Period (Zero Tolerance = 0s):</label>
+              <input id="rule-red-grace" type="number" step="0.5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Man-Down Motionless Threshold (Seconds):</label>
+              <input id="rule-mandown-sec" type="number" step="1" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Running / Sprinting Speed Ceiling (km/h):</label>
+              <input id="rule-run-speed" type="number" step="1" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Bench Sleeping / Inactivity Limit (Seconds):</label>
+              <input id="rule-sleep-sec" type="number" step="5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Cheating Glance Divergence Angle (Degrees):</label>
+              <input id="rule-glance-deg" type="number" step="5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+          </div>
+          <div style="display: flex; gap: 1.5rem; margin-top: 0.75rem; font-size: 0.78rem;">
+            <label><input id="rule-req-vest" type="checkbox" /> Enforce High-Vis Safety Vest</label>
+            <label><input id="rule-req-helmet" type="checkbox" /> Enforce Hard-Hat Helmet</label>
+            <label><input id="rule-curfew-enable" type="checkbox" /> Active Curfew (20:00 - 06:00)</label>
+          </div>
+        </div>
+
+        <!-- Section 2: Object & Physical Environment Rules -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.85rem; color: var(--color-amber); margin-bottom: 0.6rem;">🚜 OBJECT & MATERIAL HAZARD ALARM PARAMETERS</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Forklift Speed Limit (km/h):</label>
+              <input id="rule-forklift-speed" type="number" step="1" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Pallet / Cargo Tilt Limit (Degrees):</label>
+              <input id="rule-tilt-deg" type="number" step="1" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Chemical Spill Max Area (m² Threshold):</label>
+              <input id="rule-spill-m2" type="number" step="0.1" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Thermal Hotspot Trigger (°C Ceiling):</label>
+              <input id="rule-temp-c" type="number" step="5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Turbulence & Chaos Panic Index (0 - 100):</label>
+              <input id="rule-turb-score" type="number" step="5" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted);">Acoustic Scream / Decibel Alarm (dB):</label>
+              <input id="rule-sound-db" type="number" step="2" class="btn" style="width: 100%; text-align: left;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Automated Escalation Gateways -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem;">
+          <h4 style="font-size: 0.85rem; color: var(--color-red); margin-bottom: 0.6rem;">🚨 AUTOMATED ESCALATION GATEWAYS</h4>
+          <div style="display: flex; gap: 1.5rem; font-size: 0.78rem;">
+            <label><input id="rule-auto-siren" type="checkbox" /> Auto-Trigger Audible Siren</label>
+            <label><input id="rule-auto-wa" type="checkbox" /> Auto-Dispatch WhatsApp Desk</label>
+            <label><input id="rule-auto-esd" type="checkbox" /> Auto-Trip SCADA ESD Interlock</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="resetSafetyRulesToDefault()">↺ Reset Factory Defaults</button>
+        <button class="btn" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-cyan" onclick="saveSafetyRules()">💾 Save & Deploy Super Admin Parameters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Super Admin Login & Governance Modal -->
+  <div id="modal-admin-login" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.05rem; color: var(--color-cyan);">🔐 Super Admin Identity & Sovereign Governance</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.85rem;">
+        <p style="color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4;">
+          Authenticate clearance profile, regulate Master Engine execution, and review privilege elevation.
+        </p>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <div style="font-size: 0.72rem; color: var(--color-cyan); font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase;">Authenticated Operator Session:</div>
+          <div id="modal-session-info" style="font-size: 0.82rem; color: #ffffff; line-height: 1.5; background: rgba(0,0,0,0.35); padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-subtle); font-family: monospace;">
+            <!-- Populated from verified session -->
+          </div>
+          <div style="margin-top: 0.6rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-danger" style="flex: 1; justify-content: center; font-weight: bold; font-size: 0.78rem;" onclick="handleLogout()">
+              🚪 LOG OUT & LOCK TERMINAL
+            </button>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.8rem; color: var(--color-green); margin-bottom: 0.5rem;">MASTER SURVEILLANCE ENGINE STATUS</h4>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span id="modal-engine-status-text" style="font-family: monospace; font-size: 0.85rem; color: var(--color-green);">STATUS: ACTIVE (RUNNING)</span>
+            <button id="modal-btn-engine-toggle" class="btn btn-danger" onclick="toggleEngineState()">⏹️ STOP ENGINE</button>
+          </div>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem;">
+            Stopping the engine pauses AI inference, Tri-Zone polygon tracking, optical flow turbulence calculation, and WhatsApp dispatch while keeping live camera feeds standby.
+          </p>
+        </div>
+
+        <!-- Hardware & Stream Subsystem Reset Controller -->
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid var(--color-red); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.82rem; color: #fca5a5; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>🔄 FULL CAMERA & PIPELINE SUBSYSTEM RESET</span>
+            <span class="badge badge-red">SUPER ADMIN ONLY</span>
+          </h4>
+          <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.4;">
+            If camera feeds freeze, disconnect, or fail to respond due to USB/network glitches, trigger a full camera pipeline reset. This releases all Linux V4L2 device locks, flushes stream handles, re-probes hardware, and restores feeds <b>without deleting any audit logs, database records, or session memory</b>.
+          </p>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="btn-subsystem-reset" class="btn btn-danger" style="flex: 1; font-weight: bold; font-size: 0.78rem;" onclick="triggerSubsystemReset()">
+              ⚡ RE-INITIALIZE ALL CAMERAS & RESTART PIPELINE
+            </button>
+          </div>
+          <div id="subsystem-reset-status" style="display: none; font-size: 0.72rem; margin-top: 0.4rem; padding: 0.35rem; border-radius: 4px;"></div>
+        </div>
+
+        <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid var(--color-cyan); border-radius: 6px; padding: 0.65rem; margin-bottom: 0.8rem;">
+          <div style="font-size: 0.72rem; color: var(--color-cyan); font-weight: bold;">SECURITY LEVEL: SUPER_ADMIN L4 (MAXIMUM)</div>
+          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Full authorization for Feed Provisioning, Storage Quota adjustment, Break-Glass execution, and Tamper-Proof Audit sealing.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-warning" style="flex: 1; font-size: 0.75rem;" onclick="openResetPasswordModal()">🔑 Reset Account Password (6-Digit Code)</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cyan" onclick="closeModals()">✓ Return to Command Dash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Licensing & Camera Task Matrix Modal -->
+  <div id="modal-license" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.05rem; color: var(--color-amber);">🔑 Customer Camera Licensing & Workload Task Matrix</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.85rem;">
+        <!-- License Tier Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-weight: bold; color: var(--color-cyan);" id="lic-tier-name">VisionXR Developer Pilot</span>
+            <span class="badge badge-amber" id="lic-dev-badge">DEVELOPER MACHINE</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+            <div>Machine Hardware ID: <span id="lic-machine-id" style="font-family: monospace; color: var(--text-primary);">--</span></div>
+            <div>Camera Quota: <span id="lic-cam-quota" style="font-weight: bold; color: var(--color-green);">4 / 4 Max</span></div>
+          </div>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.3;">
+            ⚠️ <b>Developer Machine Constraint</b>: Provisions are hard-capped at 4 cameras to protect workstation resources. Commercial licensing unlocks multi-channel expansion.
+          </p>
+        </div>
+
+        <!-- Super Admin Direct Quota Elevation Control -->
+        <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid var(--color-cyan); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.82rem; color: var(--color-cyan); margin-bottom: 0.4rem;">⚡ SUPER ADMIN CAMERA QUOTA CONTROL</h4>
+          <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            Super Admin clearance allows direct expansion of maximum camera provisions. Enter any custom channel count or select a preset tier.
+          </p>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input id="lic-quota-number" type="number" min="1" max="500" value="16" class="btn" style="width: 80px; text-align: center; font-weight: bold; font-size: 0.85rem; padding: 0.4rem;" placeholder="Quota" />
+            <select id="lic-quota-select" class="btn" style="flex: 1; text-align: left; padding: 0.4rem; font-size: 0.78rem;" onchange="document.getElementById('lic-quota-number').value = this.value">
+              <option value="4">4 Channels (Developer Baseline)</option>
+              <option value="8">8 Channels (Pilot Expansion)</option>
+              <option value="16" selected>16 Channels (Site Facility)</option>
+              <option value="32">32 Channels (Industrial Campus)</option>
+              <option value="64">64 Channels (Sovereign Enterprise)</option>
+              <option value="128">128 Channels (Enterprise Unlimited)</option>
+            </select>
+            <button class="btn btn-cyan" style="font-size: 0.75rem; white-space: nowrap;" onclick="elevateCameraQuota()">🚀 Set Quota</button>
+          </div>
+        </div>
+
+
+        <!-- Per-Camera Task Matrix Assignment -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.82rem; color: var(--color-cyan); margin-bottom: 0.5rem;">🎯 ASSIGN SPECIFIC AI TASKS PER CAMERA</h4>
+          <div style="margin-bottom: 0.6rem;">
+            <label style="font-size: 0.72rem; color: var(--text-muted);">SELECT TARGET CAMERA CHANNEL:</label>
+            <select id="lic-task-cam-select" class="btn" style="width: 100%; text-align: left; padding: 0.4rem;" onchange="loadTasksForSelectedCamera(this.value)">
+              <option value="cam_01">CAM-01: Live USB Optical Camera</option>
+              <option value="cam_02">CAM-02: High-Voltage Switchyard</option>
+              <option value="cam_03">CAM-03: Access Control & Air-Lock</option>
+              <option value="cam_04">CAM-04: Logistics Yard & Loading Dock</option>
+            </select>
+          </div>
+          
+          <div id="lic-task-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.75rem;">
+            <!-- Populated dynamically -->
+          </div>
+          <div style="margin-top: 0.6rem; text-align: right;">
+            <button class="btn btn-cyan" style="font-size: 0.75rem;" onclick="saveSelectedCameraTasks()">💾 Save Tasks for Selected Camera</button>
+          </div>
+        </div>
+
+        <!-- Commercial License Activation -->
+        <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid var(--color-amber); border-radius: 8px; padding: 0.75rem;">
+          <h4 style="font-size: 0.8rem; color: var(--color-amber); margin-bottom: 0.4rem;">UPGRADE TO COMMERCIAL ENTERPRISE LICENSE</h4>
+          <div style="display: flex; gap: 0.5rem;">
+            <input id="lic-input-token" type="text" class="btn" placeholder="Enter VXR-LIC-... Cryptographic Key" style="flex: 1; text-align: left;" />
+            <button class="btn btn-warning" onclick="submitCommercialLicense()">Activate</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Client USB Distribution Builder (Custom Features & Hardening) -->
+  <div id="modal-distribution" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.3rem;">📦</span>
+          <h3 style="font-size: 1.05rem; color: #d8b4fe;">Client Production Distribution Package Builder</h3>
+        </div>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.85rem; max-height: 75vh; overflow-y: auto;">
+        
+        <!-- USB Media Mount Status Banner -->
+        <div id="dist-usb-status-banner" style="background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <div style="font-weight: bold; color: #e9d5ff; font-size: 0.9rem;" id="dist-usb-title">🔌 Scanning USB Media...</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);" id="dist-usb-path">Target: /media/adity/Sony-Media/VisionXR_Distribution</div>
+          </div>
+          <div id="dist-usb-badge" class="badge" style="background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80;">READY</div>
+        </div>
+
+        <!-- Target Client & Hardware Profile -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.82rem; color: var(--color-cyan); margin-bottom: 0.6rem;">🏢 CLIENT SPECIFICATIONS & CHANNEL QUOTA</h4>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Client Company / Industrial Site Name:</label>
+              <input id="dist-client-name" type="text" class="btn" style="width: 100%; text-align: left; padding: 0.45rem; font-size: 0.82rem;" value="ACME Manufacturing Corp" placeholder="e.g. Tata Steel Jamshedpur #2" />
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Max Camera Quota:</label>
+              <select id="dist-max-cameras" class="btn" style="width: 100%; text-align: left; padding: 0.45rem; font-size: 0.82rem;">
+                <option value="4">4 Channels (Baseline)</option>
+                <option value="8" selected>8 Channels (Standard)</option>
+                <option value="16">16 Channels (Facility)</option>
+                <option value="32">32 Channels (Campus)</option>
+                <option value="64">64 Channels (Industrial Enterprise)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Modules Selection Grid -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <div>
+              <h4 style="font-size: 0.82rem; color: #d8b4fe; margin: 0;">🧩 INDUSTRIAL AI FEATURE SELECTION WIZARD</h4>
+              <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">Select only features required for this client. Unselected features are excluded from configuration.</p>
+            </div>
+            <div style="display: flex; gap: 0.3rem;">
+              <button class="btn btn-compact" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="selectAllDistFeatures(true)">Select All</button>
+              <button class="btn btn-compact" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="selectAllDistFeatures(false)">Deselect All</button>
+            </div>
+          </div>
+          
+          <div id="dist-features-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
+            <!-- Dynamically populated feature checkboxes -->
+          </div>
+        </div>
+
+        <!-- Security & Hardening Assurances -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.74rem;">
+          <div style="font-weight: bold; color: var(--color-amber); margin-bottom: 0.4rem;">🔒 EMBEDDED ENTERPRISE HARDENING & PROTECTION RULES</div>
+          <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.45;">
+            <li><b>UI Cleanliness:</b> Developer <code>LICENSE</code> button and license management modals are <u>completely purged</u> from the client distribution interface.</li>
+            <li><b>Irreversible Cythonization:</b> Compiles all core Python modules into native <code>.so</code> shared binary libraries. All <code>.py</code> and <code>.c</code> source code is deleted immediately.</li>
+            <li><b>Single-Hardware Locking:</b> Cryptographically signs the license to the target server's CPU & motherboard UUID upon installation. Cannot be transferred.</li>
+            <li><b>Duplicate Prevention:</b> Installer detects existing VisionXR instances and blocks duplicate deployments.</li>
+            <li><b>USB Self-Deletion:</b> The distribution installer auto-deletes itself from the USB media once installation on the target machine completes.</li>
+            <li><b>Mother Dev Server Exemption:</b> The dev server at <code>/var/www22/visionXR</code> is protected and remains unlocked.</li>
+          </ul>
+        </div>
+
+        <!-- Build Progress / Output Log -->
+        <div id="dist-build-output-box" style="display: none; background: #000; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.6rem; font-family: monospace; font-size: 0.72rem; color: #4ade80; max-height: 140px; overflow-y: auto; margin-bottom: 0.8rem; white-space: pre-wrap;">
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.72rem; color: var(--text-muted);">USB Media: <span id="dist-footer-space">Checking...</span></span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" onclick="closeModals()">Cancel</button>
+          <button id="btn-dist-execute" class="btn" style="background: #a855f7; color: #fff; font-weight: bold;" onclick="triggerDistributionBuild()">🚀 Build Hardened USB Package</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal: Super Admin User Governance & Access Control -->
+  <div id="modal-user-governance" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 860px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <img src="/static/images/logo-icon.png" alt="ADAM Consult" style="height: 26px; width: auto;" />
+          <h3 style="font-size: 1.05rem; color: var(--color-cyan);">👥 User Governance, Access Control & Credentials Portal</h3>
+        </div>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 72vh;">
+        <!-- Master PPE Compliance Governance Control -->
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.4rem;">🦺</span>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: bold; color: var(--color-cyan);">PPE COMPLIANCE & SAFETY WARNINGS GOVERNANCE</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Enable or suppress facility-wide worker high-vis vest and safety helmet non-compliance warnings and sirens.</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <button id="gov-ppe-master-btn" class="btn btn-compact btn-cyan" onclick="togglePPEEnforcement()" style="font-weight: bold; font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+              🦺 PPE: ACTIVE
+            </button>
+            <button class="btn btn-compact btn-warning" onclick="clearAllAlertsBus()" title="Clear all current warning cards from the event bus">
+              🧹 CLEAR WARNINGS
+            </button>
+          </div>
+        </div>
+
+        <!-- Subtabs -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.6rem; align-items: center;">
+          <button id="tab-btn-users" class="btn btn-compact btn-cyan active" onclick="switchUserGovTab('list')">👥 User Accounts</button>
+          <button id="tab-btn-provision" class="btn btn-compact" onclick="switchUserGovTab('provision')">➕ Add / Provision User</button>
+          <button id="tab-btn-passwords" class="btn btn-compact btn-warning" onclick="switchUserGovTab('passwords')">🔑 Password Reset Portal</button>
+          <button id="tab-btn-matrix" class="btn btn-compact" onclick="switchUserGovTab('matrix')">🛡️ Clearance Matrix (RBAC)</button>
+          <button class="btn btn-compact btn-danger" style="margin-left: auto; font-weight: 700; border-color: var(--color-red); background: rgba(239, 68, 68, 0.25);" onclick="triggerSubsystemReset()" title="Full camera hardware re-sync without clearing logs/memory">
+            🔄 RESET CAMERAS
+          </button>
+        </div>
+
+        <!-- Section 1: User Accounts List -->
+        <div id="usergov-tab-list">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Sovereign Personnel Accounts & Clearances</span>
+            <button class="btn btn-compact btn-cyan" onclick="switchUserGovTab('provision')">➕ Add User</button>
+          </div>
+          <div id="usergov-users-table-container" style="overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.5rem;">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Section 2: Provision New User Account -->
+        <div id="usergov-tab-provision" style="display: none;">
+          <h4 style="font-size: 0.85rem; color: var(--color-cyan); margin-bottom: 0.6rem;">➕ PROVISION NEW USER IDENTITY</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.78rem;">
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Username (Login ID):</label>
+              <input id="new-user-username" type="text" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" placeholder="e.g. john.doe" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Full Display Name:</label>
+              <input id="new-user-name" type="text" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" placeholder="e.g. John Doe" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Operational Role:</label>
+              <select id="new-user-role" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;">
+                <option value="SUPER_ADMIN">SUPER_ADMIN (Full Sovereign Control)</option>
+                <option value="SECOPS_CHIEF">SECOPS_CHIEF (Security & Perimeter)</option>
+                <option value="EHS_INSPECTOR">EHS_INSPECTOR (Safety & Compliance)</option>
+                <option value="OPERATOR" selected>OPERATOR (Control Room Shift)</option>
+                <option value="AUDITOR">AUDITOR (Statutory Compliance)</option>
+              </select>
+            </div>
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Clearance Level:</label>
+              <select id="new-user-clearance" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;">
+                <option value="4">L4 - SOVEREIGN (Total Authority)</option>
+                <option value="3">L3 - RESTRICTED (Shift Supervisor)</option>
+                <option value="2" selected>L2 - OPERATIONAL (Standard Operator)</option>
+                <option value="1">L1 - AUDIT READ-ONLY</option>
+              </select>
+            </div>
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Department / Station:</label>
+              <input id="new-user-dept" type="text" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" value="Sector Operations" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); font-weight: bold;">Contact Phone (WhatsApp Escalations):</label>
+              <input id="new-user-phone" type="text" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" value="+91-8779639965" />
+            </div>
+            <div style="grid-column: span 2;">
+              <label style="color: var(--text-muted); font-weight: bold;">Initial Account Password (min 6 chars):</label>
+              <input id="new-user-password" type="password" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" placeholder="Initial password for login" />
+            </div>
+          </div>
+          <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+            <button class="btn btn-cyan" onclick="submitCreateUser()">✓ Provision & Register User</button>
+          </div>
+        </div>
+
+        <!-- Section 3: Password Management Portal -->
+        <div id="usergov-tab-passwords" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Box A: Direct Super Admin Password Override -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem;">
+              <h4 style="font-size: 0.82rem; color: var(--color-cyan); margin-bottom: 0.5rem;">⚡ SUPER ADMIN DIRECT PASSWORD OVERRIDE</h4>
+              <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem;">Directly overwrite the password of any user account without needing an external code.</p>
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">Select Target User Account:</label>
+                <select id="admin-override-user-select" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;">
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+              <div style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">New Password (min 6 chars):</label>
+                <input id="admin-override-new-password" type="password" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" placeholder="Enter new password" />
+              </div>
+              <button class="btn btn-cyan" style="width: 100%; justify-content: center; font-weight: bold;" onclick="submitAdminPasswordOverride()">💾 Save New Password</button>
+            </div>
+
+            <!-- Box B: 6-Digit Verification Code Reset -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem;">
+              <h4 style="font-size: 0.82rem; color: var(--color-warning); margin-bottom: 0.5rem;">🔑 6-DIGIT VERIFICATION CODE RESET</h4>
+              <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem;">Self-service or verified password reset using cryptographic 6-digit one-time code.</p>
+              <div id="usergov-reset-banner" style="display: none; padding: 0.4rem; border-radius: 4px; font-size: 0.72rem; margin-bottom: 0.5rem;"></div>
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">Username:</label>
+                <div style="display: flex; gap: 0.35rem; margin-top: 0.2rem;">
+                  <input id="usergov-code-username" type="text" class="btn" style="flex: 1; text-align: left;" value="" placeholder="Enter Username" autocomplete="off" />
+                  <button class="btn btn-warning" onclick="requestUserGovCode()">📩 Get Code</button>
+                </div>
+              </div>
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">6-Digit Code:</label>
+                <input id="usergov-code-input" type="text" maxlength="6" class="btn" style="width: 100%; text-align: center; letter-spacing: 0.2em; font-family: monospace; font-weight: bold; color: var(--color-green); margin-top: 0.2rem;" placeholder="------" />
+              </div>
+              <div style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">New Password:</label>
+                <input id="usergov-code-newpass" type="password" class="btn" style="width: 100%; text-align: left; margin-top: 0.2rem;" placeholder="New password" />
+              </div>
+              <button class="btn btn-warning" style="width: 100%; justify-content: center; font-weight: bold;" onclick="confirmUserGovCode()">✓ Verify & Reset Password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Clearance Matrix -->
+        <div id="usergov-tab-matrix" style="display: none;">
+          <h4 style="font-size: 0.85rem; color: var(--color-cyan); margin-bottom: 0.6rem;">🛡️ CLEARANCE LEVEL & RBAC POLICY MATRIX</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.05); color: var(--text-muted);">
+                <th style="padding: 0.5rem; border: 1px solid var(--border-subtle);">CLEARANCE</th>
+                <th style="padding: 0.5rem; border: 1px solid var(--border-subtle);">ROLE</th>
+                <th style="padding: 0.5rem; border: 1px solid var(--border-subtle);">AUTHORIZED ACTIONS</th>
+                <th style="padding: 0.5rem; border: 1px solid var(--border-subtle);">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle); color: var(--color-red); font-weight: bold;">L4 SOVEREIGN</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Super Admin</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">User provisioning, direct password reset, camera retire/add, NVMe quota, safety rules, emergency break-glass</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);"><span class="badge badge-red">SOVEREIGN ROOT</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle); color: var(--color-amber); font-weight: bold;">L3 RESTRICTED</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">SecOps Chief</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Siren activation, facility lockdown, curfew configuration, zone drawing, WhatsApp desk dispatch</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);"><span class="badge badge-amber">OPERATIONAL LEAD</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle); color: var(--color-cyan); font-weight: bold;">L2 OPERATIONAL</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Shift Operator / EHS</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Live optical video viewing, silence active alarms, facial privacy blur, incident event acknowledge</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);"><span class="badge badge-cyan">SHIFT WATCH</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle); color: var(--text-muted); font-weight: bold;">L1 STATUTORY</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Auditor</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);">Tamper-proof audit ledger verification, telemetry timeline review, license compliance check</td>
+                <td style="padding: 0.5rem; border: 1px solid var(--border-subtle);"><span class="badge">READ-ONLY AUDIT</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Reset Modal (6-Digit Code) -->
+  <div id="modal-password-reset" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.05rem; color: var(--color-cyan);">🔑 Password Reset (6-Digit Code)</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.82rem;">
+        <p style="color: var(--text-muted); font-size: 0.72rem; margin-bottom: 0.6rem;">
+          Enter your registered username to generate a secure 6-digit cryptographic verification code.
+        </p>
+
+        <div id="reset-status-banner" style="display: none; padding: 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-bottom: 0.6rem;"></div>
+
+        <div style="margin-bottom: 0.6rem;">
+          <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">USERNAME / ACCOUNT:</label>
+          <div style="display: flex; gap: 0.4rem; margin-top: 0.2rem;">
+            <input id="reset-input-username" type="text" class="auth-input" value="" style="flex: 1;" placeholder="Enter Username" autocomplete="off" />
+            <button class="btn btn-warning" onclick="requestResetCode()" style="white-space: nowrap; font-size: 0.75rem;">📩 Get 6-Digit Code</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 0.6rem;">
+          <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">6-DIGIT VERIFICATION CODE:</label>
+          <input id="reset-input-code" type="text" class="auth-input" maxlength="6" placeholder="Enter 6-digit code (e.g. 842190)" style="letter-spacing: 0.25em; font-family: monospace; font-size: 1.1rem; text-align: center; margin-top: 0.2rem; font-weight: bold; color: var(--color-green);" />
+        </div>
+
+        <div style="margin-bottom: 0.8rem;">
+          <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">NEW PASSWORD:</label>
+          <input id="reset-input-newpassword" type="password" class="auth-input" placeholder="New password (min 6 chars)" style="margin-top: 0.2rem;" />
+        </div>
+
+        <button class="btn btn-cyan" style="width: 100%; justify-content: center; padding: 0.6rem; font-weight: bold;" onclick="confirmResetPassword()">
+          ✓ CONFIRM & UPDATE PASSWORD
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Anomaly & Intruder Discrepancy Evidence Viewer -->
+  <div id="modal-evidence" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <div style="font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.1rem;">📸</span> FORENSIC INTRUDER EVIDENCE VIEWER
+        </div>
+        <button class="btn btn-compact" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem;">
+        <div id="evidence-alert-details" style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 0.75rem; font-size: 0.78rem;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Evidence Media Switcher / Display -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem;">
+          <button id="evidence-tab-img" class="btn btn-compact btn-cyan" onclick="switchEvidenceTab('img')">📷 Photographic Snapshot</button>
+          <button id="evidence-tab-vid" class="btn btn-compact" onclick="switchEvidenceTab('vid')">🎬 Discrepancy Video Clip</button>
+        </div>
+
+        <div id="evidence-img-container" style="text-align: center; background: #000; border-radius: 6px; overflow: hidden; max-height: 440px; display: flex; align-items: center; justify-content: center;">
+          <img id="evidence-img" src="" alt="Evidence Snapshot" style="max-width: 100%; max-height: 440px; object-fit: contain;" />
+        </div>
+
+        <div id="evidence-vid-container" style="display: none; text-align: center; background: #000; border-radius: 6px; overflow: hidden; max-height: 440px;">
+          <video id="evidence-video" controls autoplay loop style="max-width: 100%; max-height: 440px; width: 100%;">
+            <source id="evidence-video-source" src="" type="video/mp4">
+            Your browser does not support HTML5 video tag.
+          </video>
+        </div>
+
+        <div id="evidence-hash-container" style="margin-top: 0.75rem; background: rgba(0,0,0,0.5); padding: 0.5rem 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.72rem; color: #a5b4fc; word-break: break-all;">
+          <b>SHA-256 TAMPER SEAL:</b> <span id="evidence-sha256">...</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <span style="font-size: 0.7rem; color: var(--text-muted);">Cryptographically recorded & verified in Sovereign Audit Ledger.</span>
+        <button class="btn btn-compact" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: ANPR & Traffic Intelligence -->
+  <div id="modal-anpr" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 780px; width: 95%;">
+      <div class="modal-header">
+        <h3>🚘 Automatic Number Plate Recognition & Traffic Intelligence</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1rem; padding-bottom: 0.5rem;">
+          <button id="anpr-btn-tab-watchlist" class="btn btn-compact btn-cyan" onclick="switchANPRTab('watchlist')">📋 Blacklist Watchlist</button>
+          <button id="anpr-btn-tab-gates" class="btn btn-compact" onclick="switchANPRTab('gates')">🚪 Gate Entry/Exit Counts</button>
+          <button id="anpr-btn-tab-test" class="btn btn-compact" onclick="switchANPRTab('test')">🔍 Test Image OCR</button>
+        </div>
+
+        <!-- Tab 1: Watchlist -->
+        <div id="anpr-tab-watchlist">
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 1rem;">
+            <h4 style="font-size: 0.82rem; color: var(--color-cyan); margin-bottom: 0.5rem;">➕ Add Suspected Vehicle to Watchlist</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.4rem; align-items: center;">
+              <input id="anpr-new-plate" type="text" class="auth-input" placeholder="Plate (e.g. DL01AB1234)" style="padding: 0.4rem; font-size: 0.8rem;" />
+              <input id="anpr-new-owner" type="text" class="auth-input" placeholder="Owner / Suspect Name" style="padding: 0.4rem; font-size: 0.8rem;" />
+              <input id="anpr-new-reason" type="text" class="auth-input" placeholder="Reason (e.g. Stolen Vehicle)" style="padding: 0.4rem; font-size: 0.8rem;" />
+              <button class="btn btn-cyan btn-compact" onclick="addWatchlistPlate()">Save</button>
+            </div>
+          </div>
+
+          <div style="font-size: 0.78rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.4rem;">FLAGGED WATCHLIST VEHICLES (CRITICAL ESCALATION):</div>
+          <div id="anpr-watchlist-table" style="max-height: 250px; overflow-y: auto;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Gates -->
+        <div id="anpr-tab-gates" style="display: none;">
+          <div id="anpr-gates-display" style="padding: 1rem; text-align: center;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Test OCR -->
+        <div id="anpr-tab-test" style="display: none;">
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.6rem;">Upload or drag a photo of a vehicle or license plate to test live recognition:</p>
+          <input type="file" id="anpr-test-file" accept="image/*" style="font-size: 0.8rem; margin-bottom: 0.6rem;" />
+          <button class="btn btn-cyan btn-compact" onclick="testANPRUpload()">⚡ Run Plate OCR</button>
+          <div id="anpr-test-results" style="margin-top: 1rem; display: none; background: rgba(0,0,0,0.5); padding: 0.8rem; border-radius: 6px; font-family: monospace; font-size: 0.8rem;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-compact" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Biometrics & Face Recognition (FRSS) -->
+  <div id="modal-biometrics" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 820px; width: 95%;">
+      <div class="modal-header">
+        <h3>👤 Facial Recognition & Biometric Directory (FRSS)</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1rem; padding-bottom: 0.5rem;">
+          <button id="bio-btn-tab-directory" class="btn btn-compact btn-cyan" onclick="switchBiometricsTab('directory')">👥 Enrolled Personnel</button>
+          <button id="bio-btn-tab-enroll" class="btn btn-compact" onclick="switchBiometricsTab('enroll')">➕ Enroll New Staff / Admin</button>
+          <button id="bio-btn-tab-verify" class="btn btn-compact" onclick="switchBiometricsTab('verify')">🔍 Live 1:N Verify & Mask</button>
+        </div>
+
+        <!-- Tab 1: Directory -->
+        <div id="bio-tab-directory">
+          <div style="font-size: 0.78rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">AUTHORIZED PERSONNEL BIOMETRIC REGISTRY:</div>
+          <div id="bio-personnel-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.6rem; max-height: 350px; overflow-y: auto;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Enroll -->
+        <div id="bio-tab-enroll" style="display: none;">
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 0.85rem; color: var(--color-cyan); margin-bottom: 0.75rem;">Biometric Enrollment Credentials</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.6rem;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">FULL NAME:</label>
+                <input id="bio-new-name" type="text" class="auth-input" placeholder="e.g. Vikramaditya" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">BADGE / EMPLOYEE ID:</label>
+                <input id="bio-new-badge" type="text" class="auth-input" placeholder="e.g. VXR-1008" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">DEPARTMENT:</label>
+                <input id="bio-new-dept" type="text" class="auth-input" placeholder="e.g. Industrial Automation" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">ROLE / DESIGNATION:</label>
+                <input id="bio-new-role" type="text" class="auth-input" placeholder="e.g. Shift Lead" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;" />
+              </div>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+              <label style="font-size: 0.72rem; color: var(--text-muted);">FACIAL PHOTO (FOR 128-D BIOMETRIC VECTOR):</label>
+              <input type="file" id="bio-new-photo" accept="image/*" style="font-size: 0.8rem; margin-top: 0.3rem;" />
+            </div>
+            <button class="btn btn-cyan" onclick="submitPersonnelEnrollment()">💾 Compute Biometric Embedding & Enroll</button>
+          </div>
+        </div>
+
+        <!-- Tab 3: Verify -->
+        <div id="bio-tab-verify" style="display: none;">
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.6rem;">Upload a face image to test 1:N Identity Verification and Mask Detection:</p>
+          <input type="file" id="bio-verify-photo" accept="image/*" style="font-size: 0.8rem; margin-bottom: 0.6rem;" />
+          <button class="btn btn-cyan btn-compact" onclick="testFaceVerify()">⚡ Verify Biometrics & Mask</button>
+          <div id="bio-verify-results" style="margin-top: 1rem; display: none; background: rgba(0,0,0,0.5); padding: 0.8rem; border-radius: 6px; font-family: monospace; font-size: 0.8rem;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-compact" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Spatial Analytics & Attribute Search -->
+  <div id="modal-analytics" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 820px; width: 95%;">
+      <div class="modal-header">
+        <h3>📊 Spatial Analytics, People Counting & Attribute Search</h3>
+        <button class="btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1rem; padding-bottom: 0.5rem;">
+          <button id="ana-btn-tab-occupancy" class="btn btn-compact btn-cyan" onclick="switchAnalyticsTab('occupancy')">🚶 People & Vehicle Counting</button>
+          <button id="ana-btn-tab-attributes" class="btn btn-compact" onclick="switchAnalyticsTab('attributes')">🔍 Deep Visual Attribute Search</button>
+        </div>
+
+        <!-- Tab 1: Occupancy -->
+        <div id="ana-tab-occupancy">
+          <div style="font-size: 0.78rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">LIVE BIDIRECTIONAL LINE CROSSING COUNTERS:</div>
+          <div id="ana-occupancy-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Visual Attribute Search -->
+        <div id="ana-tab-attributes" style="display: none;">
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: flex-end;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">FILTER BY DOMINANT COLOR:</label>
+                <select id="ana-search-color" class="auth-input" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;">
+                  <option value="">Any Color</option>
+                  <option value="RED">Red</option>
+                  <option value="BLUE">Blue</option>
+                  <option value="GREEN">Green</option>
+                  <option value="YELLOW">Yellow</option>
+                  <option value="BLACK">Black</option>
+                  <option value="WHITE">White</option>
+                  <option value="GREY">Grey</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--text-muted);">OBJECT CLASS:</label>
+                <select id="ana-search-class" class="auth-input" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;">
+                  <option value="">Any Class</option>
+                  <option value="person">Person</option>
+                  <option value="car">Car / Vehicle</option>
+                  <option value="motorcycle">Motorcycle</option>
+                </select>
+              </div>
+              <button class="btn btn-cyan" onclick="performAttributeSearch()">🔍 Search Ledger</button>
+            </div>
+          </div>
+
+          <div style="font-size: 0.78rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.4rem;">SEARCH RESULTS (VISUAL ATTRIBUTE MATCHES):</div>
+          <div id="ana-results-table" style="max-height: 250px; overflow-y: auto;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-compact" onclick="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app-v251.js?v=262"></script>
+</body>
+</html>
+
+
+
+

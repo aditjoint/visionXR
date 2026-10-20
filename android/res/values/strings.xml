@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VisionXR Sovereign</string>
+    <string name="security_banner">AIR-GAPPED SOVEREIGN NODE • ZERO NETWORK PROTOCOL ACTIVE</string>
+    <string name="back_cam_label">SENSOR #1 • REAR SECTOR LENS</string>
+    <string name="front_cam_label">SENSOR #2 • FRONT FACIAL LENS</string>
+</resources>

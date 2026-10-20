@@ -1,0 +1,41 @@
+# VisionXR .gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Storage and Evidence Data
+data
+data/
+storage/
+recordings/
+snapshots/
+*.log
+*.bin
+
+# Distribution Packages & Builds
+dist/
+build/
+*.zip
+*.tar.gz
+*.7z
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Android Build Artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+.idea/
+*.iml
+
+# IDE & OS Artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*~
