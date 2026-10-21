@@ -31,11 +31,8 @@ logger = logging.getLogger("visionxr.anpr")
 WATCHLIST_FILE = DATA_DIR / "vehicle_watchlist.json"
 ANPR_LOG_FILE = DATA_DIR / "anpr_history.json"
 
-DEFAULT_WATCHLIST = [
-    {"plate": "DL01AB1234", "owner": "Bolo Ram", "reason": "Flagged Stolen Vehicle / Interpol Watch", "risk": "CRITICAL"},
-    {"plate": "MH12DE5678", "owner": "Unknown", "reason": "Unauthorized Hazardous Transport", "risk": "HIGH"},
-    {"plate": "KA04XY9999", "owner": "Wanted Suspect", "reason": "Active Warrant / Court Order", "risk": "CRITICAL"}
-]
+# Pure physical operational mode: ZERO static seed vehicles
+DEFAULT_WATCHLIST: List[Dict[str, Any]] = []
 
 class TrafficANPREngine:
     def __init__(self):

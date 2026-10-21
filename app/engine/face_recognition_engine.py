@@ -23,28 +23,8 @@ logger = logging.getLogger("visionxr.biometrics")
 PERSONNEL_DIR = DATA_DIR / "personnel"
 REGISTRY_FILE = PERSONNEL_DIR / "personnel_registry.json"
 
-DEFAULT_ENROLLED = [
-    {
-        "id": "EMP_001",
-        "name": "Commander Shift Alpha",
-        "badge_id": "VXR-9901",
-        "department": "Security Operations Center",
-        "role": "Super Admin",
-        "is_authorized": True,
-        "enrolled_at": 1728000000,
-        "embedding": [float(math.sin(i * 0.15)) for i in range(128)]
-    },
-    {
-        "id": "EMP_002",
-        "name": "Operator Vikramaditya",
-        "badge_id": "VXR-4402",
-        "department": "Industrial Automation",
-        "role": "Shift Engineer",
-        "is_authorized": True,
-        "enrolled_at": 1728100000,
-        "embedding": [float(math.cos(i * 0.22)) for i in range(128)]
-    }
-]
+# Pure physical operational mode: ZERO static seed personnel data
+DEFAULT_ENROLLED: List[Dict[str, Any]] = []
 
 class FaceRecognitionEngine:
     def __init__(self):

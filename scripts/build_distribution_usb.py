@@ -142,6 +142,23 @@ def build_distribution(company_name: str, max_cameras: int, selected_feature_ids
     with open(PAYLOAD_DIR / "data" / "zones.json", "w") as f:
         json.dump([], f, indent=2)
 
+    # Pristine empty biometric personnel registry (ZERO static seed personnel)
+    (PAYLOAD_DIR / "data" / "personnel").mkdir(parents=True, exist_ok=True)
+    with open(PAYLOAD_DIR / "data" / "personnel" / "personnel_registry.json", "w") as f:
+        json.dump([], f, indent=2)
+
+    # Pristine empty vehicle watchlist & ANPR history (ZERO static seed plates)
+    with open(PAYLOAD_DIR / "data" / "vehicle_watchlist.json", "w") as f:
+        json.dump([], f, indent=2)
+    with open(PAYLOAD_DIR / "data" / "anpr_history.json", "w") as f:
+        json.dump([], f, indent=2)
+
+    # Pristine empty attribute forensic ledger & audit records
+    with open(PAYLOAD_DIR / "data" / "attribute_ledger.json", "w") as f:
+        json.dump([], f, indent=2)
+    with open(PAYLOAD_DIR / "data" / "audit_ledger.json", "w") as f:
+        json.dump([], f, indent=2)
+
     # Clean default IP rules
     default_ip_rules = {
         "allowed_cidrs": ["127.0.0.1/32", "::1/128", "192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"],
