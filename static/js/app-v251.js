@@ -4041,14 +4041,37 @@ function selectAllDistFeatures(select) {
     });
 }
 
+function generateDistPassphrase() {
+    const chars = '0123456789ABCDEF';
+    let token = '';
+    for (let i = 0; i < 12; i++) {
+        token += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const key = `VXR-AES-${token}`;
+    const inp = document.getElementById('dist-release-passphrase');
+    if (inp) inp.value = key;
+}
+
+function copyDistPassphrase() {
+    const inp = document.getElementById('dist-release-passphrase');
+    if (inp && inp.value.trim()) {
+        navigator.clipboard.writeText(inp.value.trim());
+        alert(`Copied release passphrase to clipboard: ${inp.value.trim()}`);
+    } else {
+        alert('No passphrase entered yet. Enter or generate a passphrase first.');
+    }
+}
+
 async function triggerDistributionBuild() {
     const clientNameInput = document.getElementById('dist-client-name');
     const maxCamsSelect = document.getElementById('dist-max-cameras');
+    const passphraseInput = document.getElementById('dist-release-passphrase');
     const outBox = document.getElementById('dist-build-output-box');
     const btnExecute = document.getElementById('btn-dist-execute');
 
     const companyName = clientNameInput ? clientNameInput.value.trim() : 'SOVEREIGN ENTERPRISE';
     const maxCams = maxCamsSelect ? parseInt(maxCamsSelect.value) : 8;
+    const passphraseVal = passphraseInput ? passphraseInput.value.trim() : '';
 
     const checkedBoxes = Array.from(document.querySelectorAll('.dist-feature-cb:checked'));
     const selectedFeatures = checkedBoxes.map(cb => cb.value);
@@ -4060,13 +4083,13 @@ async function triggerDistributionBuild() {
 
     if (btnExecute) {
         btnExecute.disabled = true;
-        btnExecute.innerText = '⏳ Building & Hardening USB Package...';
+        btnExecute.innerText = '⏳ Encrypting & Hardening USB Package...';
     }
 
     if (outBox) {
         outBox.style.display = 'block';
         outBox.style.color = '#4ade80';
-        outBox.innerText = `[+] Initiating industrial package build for ${companyName}...\n[+] Quota: ${maxCams} Cameras | Features: ${selectedFeatures.length} modules\n[+] Stripping LICENSE buttons and developer modals...\n[+] Writing irreversible Cythonization directives...`;
+        outBox.innerText = `[+] Initiating industrial package build for ${companyName}...\n[+] Quota: ${maxCams} Cameras | Features: ${selectedFeatures.length} modules\n[+] Scrubbing developer credentials, contact numbers & static data...\n[+] Encrypting payload into payload.enc with OpenSSL AES-256-CBC PBKDF2...`;
     }
 
     try {
@@ -4076,7 +4099,8 @@ async function triggerDistributionBuild() {
             body: JSON.stringify({
                 company_name: companyName,
                 max_cameras: maxCams,
-                features: selectedFeatures
+                features: selectedFeatures,
+                release_passphrase: passphraseVal || null
             })
         });
 
@@ -4085,12 +4109,23 @@ async function triggerDistributionBuild() {
             throw new Error(data.detail || `HTTP ${res.status}`);
         }
 
+        const releaseKey = data.details.release_passphrase || passphraseVal;
+        if (passphraseInput) {
+            passphraseInput.value = releaseKey;
+        }
+
         if (outBox) {
             outBox.innerText += `\n[✓] ${data.message}\n` +
                 `[✓] Target: ${data.details.target_path}\n` +
-                `[✓] Linux Installer: ${data.details.script}\n` +
-                `[✓] Hardening: Irreversible Cython, Single Hardware-Lock, Duplicate-Guard, USB Self-Deletion Active!\n` +
-                `\n✓ READY FOR CLIENT DEPLOYMENT ON LINUX PC VIA:\n  sudo bash ${data.details.target_path}/install_ubuntu.sh`;
+                `[✓] Encrypted Binary Archive: ${data.details.target_path}/payload.enc\n` +
+                `\n========================================================================\n` +
+                `🔑 AES-256 RELEASE PASSPHRASE: ${releaseKey}\n` +
+                `⚠️ IMPORTANT: Store this passphrase safely. It is required to install on target PC!\n` +
+                `========================================================================\n` +
+                `[✓] USB Protection: ZERO .py files on USB media (Encrypted AES-256 payload)\n` +
+                `[✓] Target Protection: RAM-only decryption, Irreversible Cython, Hardware-Lock\n` +
+                `\n✓ READY FOR CLIENT DEPLOYMENT ON TARGET SERVER VIA:\n` +
+                `  sudo bash ${data.details.target_path}/install_ubuntu.sh --passphrase ${releaseKey}`;
         }
     } catch (e) {
         if (outBox) {

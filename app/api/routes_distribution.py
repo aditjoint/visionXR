@@ -14,6 +14,7 @@ class BuildDistributionRequest(BaseModel):
     company_name: str
     max_cameras: int = 8
     features: List[str]
+    release_passphrase: Optional[str] = None
 
 @distribution_router.get("/features")
 async def get_distribution_features():
@@ -59,13 +60,15 @@ async def build_distribution_package(req: BuildDistributionRequest):
 
     clean_company = req.company_name.strip() if req.company_name.strip() else "SOVEREIGN ENTERPRISE"
     cams = max(1, min(128, req.max_cameras))
+    passphrase = req.release_passphrase.strip() if req.release_passphrase and req.release_passphrase.strip() else None
 
     try:
         result = await asyncio.to_thread(
             build_distribution,
             company_name=clean_company,
             max_cameras=cams,
-            selected_feature_ids=selected_valid
+            selected_feature_ids=selected_valid,
+            release_passphrase=passphrase
         )
         return {
             "success": True,

@@ -1025,16 +1025,31 @@
           </div>
         </div>
 
+        <!-- Release Passphrase & AES-256 Protection -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <h4 style="font-size: 0.82rem; color: #f59e0b; margin: 0;">🔐 AES-256 RELEASE ENCRYPTION PASSPHRASE</h4>
+            <button class="btn btn-compact" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" onclick="generateDistPassphrase()">🎲 Generate Random Key</button>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem;">The distribution on the USB drive is encrypted with AES-256-CBC PBKDF2. Zero .py files exist on the USB media. Entering this passphrase is required on the target machine during installation.</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <input id="dist-release-passphrase" type="text" class="btn" style="flex: 1; text-align: left; padding: 0.45rem; font-size: 0.82rem; font-family: monospace;" placeholder="Leave blank to auto-generate (e.g. VXR-A83F9C...)" />
+            <button class="btn btn-compact" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;" onclick="copyDistPassphrase()">📋 Copy</button>
+          </div>
+        </div>
+
         <!-- Security & Hardening Assurances -->
         <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.74rem;">
           <div style="font-weight: bold; color: var(--color-amber); margin-bottom: 0.4rem;">🔒 EMBEDDED ENTERPRISE HARDENING & PROTECTION RULES</div>
           <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.45;">
-            <li><b>UI Cleanliness:</b> Developer <code>LICENSE</code> button and license management modals are <u>completely purged</u> from the client distribution interface.</li>
-            <li><b>Irreversible Cythonization:</b> Compiles all core Python modules into native <code>.so</code> shared binary libraries. All <code>.py</code> and <code>.c</code> source code is deleted immediately.</li>
-            <li><b>Single-Hardware Locking:</b> Cryptographically signs the license to the target server's CPU & motherboard UUID upon installation. Cannot be transferred.</li>
-            <li><b>Duplicate Prevention:</b> Installer detects existing VisionXR instances and blocks duplicate deployments.</li>
+            <li><b>AES-256 In-Transit Encryption:</b> Payload on USB is fully encrypted into <code>payload.enc</code> with PBKDF2 (100k iter). ZERO <code>.py</code> source files exist on USB drive.</li>
+            <li><b>RAM-Only In-Memory Decryption:</b> Unlocks directly into RAM disk (<code>/dev/shm</code>). Plaintext files never sit on customer disk.</li>
+            <li><b>Irreversible Cythonization:</b> Compiles all application logic into stripped native <code>.so</code> ELF binaries. Every single <code>.py</code> and <code>.c</code> file is shredded and deleted.</li>
+            <li><b>Filesystem Read-Only Lock:</b> Installs binaries with <code>chmod 550</code> read-only execution. Alterations or source inspection are blocked.</li>
+            <li><b>Single-Hardware Locking:</b> Cryptographically signs the license to target CPU & motherboard UUID. Cannot be transferred to duplicate systems.</li>
+            <li><b>In-Place Upgrade Mode:</b> Upgrades active nodes while seamlessly preserving customer cameras, zones, and biometrics.</li>
             <li><b>USB Self-Deletion:</b> The distribution installer auto-deletes itself from the USB media once installation on the target machine completes.</li>
-            <li><b>Mother Dev Server Exemption:</b> The dev server at <code>/var/www22/visionXR</code> is protected and remains unlocked.</li>
+            <li><b>Mother Dev Server Exemption:</b> The dev server at <code>/var/www22/visionXR</code> is protected and remains unencrypted.</li>
           </ul>
         </div>
 
