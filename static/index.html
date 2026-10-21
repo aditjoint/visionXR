@@ -540,10 +540,12 @@
 
         <div style="margin-bottom: 0.75rem;">
           <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">QUICK TEMPLATES (CLICK TO PREFILL):</label>
-          <div style="display: flex; gap: 0.4rem;">
-            <button class="btn btn-compact btn-cyan" type="button" onclick="applyProvisionPreset('usb')">📷 USB / V4L2 Device</button>
-            <button class="btn btn-compact btn-warning" type="button" onclick="applyProvisionPreset('rtsp')">🌐 Industrial RTSP IP Dome</button>
-            <button class="btn btn-compact" type="button" onclick="applyProvisionPreset('phone')">📱 Mobile / Web Stream</button>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button class="btn btn-compact btn-cyan" type="button" onclick="applyProvisionPreset('usb')">📷 USB / V4L2</button>
+            <button class="btn btn-compact btn-warning" type="button" onclick="applyProvisionPreset('rtsp')">🌐 Industrial RTSP</button>
+            <button class="btn btn-compact btn-cyan" type="button" onclick="applyProvisionPreset('hikvision')">📹 Hikvision / Dahua</button>
+            <button class="btn btn-compact btn-cyan" type="button" onclick="applyProvisionPreset('onvif')">📡 ONVIF Profile S</button>
+            <button class="btn btn-compact btn-warning" type="button" onclick="applyProvisionPreset('phone')">📱 Mobile / Web</button>
           </div>
         </div>
 
@@ -1511,7 +1513,7 @@
     </div>
   </div>
 
-  <script src="/static/js/app-v251.js?v=263"></script>
+  <script src="/static/js/app-v251.js?v=264"></script>
 </body>
 </html>
 

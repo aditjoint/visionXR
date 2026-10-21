@@ -907,6 +907,18 @@ function applyProvisionPreset(type) {
         srcInput.value = `rtsp://192.168.1.${100 + nextNum}:554/live`;
         typeSelect.value = 'rtsp';
         locInput.value = 'Plant Perimeter Avenue';
+    } else if (type === 'hikvision') {
+        idInput.value = `cam_${nextNum.toString().padStart(2, '0')}`;
+        nameInput.value = `Hikvision / Dahua IP Dome #${nextNum}`;
+        srcInput.value = `rtsp://admin:admin123@192.168.1.64:554/Streaming/Channels/101`;
+        typeSelect.value = 'rtsp';
+        locInput.value = 'Sector 22 Perimeter';
+    } else if (type === 'onvif') {
+        idInput.value = `cam_${nextNum.toString().padStart(2, '0')}`;
+        nameInput.value = `ONVIF Profile S IP Camera #${nextNum}`;
+        srcInput.value = `rtsp://admin:admin123@192.168.1.50:554/onvif1`;
+        typeSelect.value = 'onvif';
+        locInput.value = 'Assembly Floor North';
     } else if (type === 'phone') {
         idInput.value = `cam_${nextNum.toString().padStart(2, '0')}`;
         nameInput.value = `Mobile Dashcam Feed #${nextNum}`;
@@ -1553,15 +1565,47 @@ async function openSnifferModal() {
         const res = await fetch('/api/sniffer/scan');
         const data = await res.json();
         body.innerHTML = data.discovered_devices.map(d => `
-            <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 4px; margin-bottom: 0.5rem; border: 1px solid var(--border-subtle);">
-                <strong>${d.hostname}</strong> (${d.ip}) - <span class="badge badge-green">${d.status}</span><br>
-                <small style="color: var(--color-cyan);">${d.vendor}</small><br>
-                <small style="font-family: monospace; color: var(--text-muted);">${d.rtsp_url}</small>
+            <div style="padding: 0.6rem; background: var(--bg-card); border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
+                <div style="flex: 1;">
+                    <strong>${d.hostname}</strong> (${d.ip}) - <span class="badge badge-green">${d.status}</span><br>
+                    <small style="color: var(--color-cyan); font-weight: 600;">${d.vendor}</small><br>
+                    <small style="font-family: monospace; color: var(--text-muted); word-break: break-all;">${d.rtsp_url}</small>
+                </div>
+                <button class="btn btn-compact btn-cyan" onclick="quickProvisionDiscovered('${encodeURIComponent(d.rtsp_url)}', '${encodeURIComponent(d.vendor)}')">➕ Provision Feed</button>
             </div>
         `).join('');
     } catch (e) {
         body.innerHTML = '<span style="color: var(--color-red);">Failed to run hardware scan.</span>';
     }
+}
+
+function quickProvisionDiscovered(encUrl, encName) {
+    const url = decodeURIComponent(encUrl);
+    const name = decodeURIComponent(encName);
+    closeModals();
+    openProvisionModal();
+    setTimeout(() => {
+        const nextNum = (cameraRegistry ? cameraRegistry.length + 1 : 2);
+        const idInput = document.getElementById('prov-id');
+        const nameInput = document.getElementById('prov-name');
+        const srcInput = document.getElementById('prov-source');
+        const typeSelect = document.getElementById('prov-type');
+        const locInput = document.getElementById('prov-location');
+        if (idInput) idInput.value = `cam_${nextNum.toString().padStart(2, '0')}`;
+        if (nameInput) nameInput.value = name || `IP Stream #${nextNum}`;
+        if (srcInput) srcInput.value = url;
+        if (typeSelect) {
+            if (url.startsWith('v4l2://') || url.startsWith('/dev/video')) {
+                typeSelect.value = 'usb_v4l2';
+                if (srcInput) srcInput.value = url.replace('v4l2://', '');
+            } else if (url.startsWith('rtsp://') || url.startsWith('rtsps://')) {
+                typeSelect.value = 'rtsp';
+            } else if (url.startsWith('http://') || url.startsWith('https://')) {
+                typeSelect.value = 'http';
+            }
+        }
+        if (locInput) locInput.value = 'Sector 22 Network Perimeter';
+    }, 150);
 }
 
 // Cryptographic Audit Ledger Modal

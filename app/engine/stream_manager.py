@@ -10,6 +10,10 @@ from collections import deque
 from typing import Dict, List, Tuple, Any, Optional
 from app.config import DEFAULT_CAMERAS, DATA_DIR
 
+import os
+# Enforce low-latency TCP transport and 4-second socket timeout for RTSP / ONVIF IP streams
+os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp|stimeout;4000000")
+
 logger = logging.getLogger("visionxr.streams")
 CAMERAS_FILE = DATA_DIR / "cameras.json"
 
@@ -305,7 +309,7 @@ class StreamManager:
                         self.consecutive_failures[cam_id] = 0
                     logger.info(f"Initialized physical V4L2 capture for {cam_id}: /dev/video{dev_idx} ({cam_cfg.get('name')})")
                     return
-        elif src.startswith("rtsp://") or src.startswith("http://"):
+        elif src.startswith("rtsp://") or src.startswith("rtsps://") or src.startswith("http://") or src.startswith("https://"):
             with self.lock:
                 if cam_id in self.captures:
                     try:
@@ -335,8 +339,8 @@ class StreamManager:
 
     def _async_connect_capture(self, cam_id: str, cap_src: Any):
         try:
-            logger.info(f"Initiating physical video capture for {cam_id} ({cap_src})...")
-            dev_idx = cap_src
+            logger.info(f"Initiating video capture for {cam_id} ({cap_src})...")
+            dev_idx = None
             if isinstance(cap_src, int) or str(cap_src).isdigit() or str(cap_src).startswith("/dev/video"):
                 dev_idx = find_v4l2_device_for_camera(cam_id, cap_src)
             with self.lock:
@@ -346,19 +350,20 @@ class StreamManager:
                     except Exception:
                         pass
                     del self.captures[cam_id]
-            cap = cv2.VideoCapture(dev_idx if dev_idx is not None else cap_src)
+            target_source = dev_idx if dev_idx is not None else cap_src
+            cap = cv2.VideoCapture(target_source)
             if cap and cap.isOpened():
                 with self.lock:
                     self.captures[cam_id] = cap
-                    self.capture_indices[cam_id] = dev_idx
+                    self.capture_indices[cam_id] = target_source
                     if dev_idx is not None:
                         self.cameras[cam_id]["source"] = str(dev_idx)
                     self.consecutive_failures[cam_id] = 0
-                logger.info(f"Physical feed successfully connected for {cam_id}: {dev_idx}")
+                logger.info(f"Video feed successfully connected for {cam_id}: {target_source}")
             else:
-                logger.warning(f"Physical feed for {cam_id} ({cap_src}) not ready; standby slate active.")
+                logger.warning(f"Video feed for {cam_id} ({cap_src}) not ready; standby slate active.")
         except Exception as e:
-            logger.error(f"Error opening physical capture {cam_id}: {e}")
+            logger.error(f"Error opening capture for {cam_id}: {e}")
 
     def update_camera_source(self, cam_id: str, new_source: str, cam_type: str = "rtsp", name: Optional[str] = None, location: Optional[str] = None):
         with self.lock:
@@ -370,7 +375,7 @@ class StreamManager:
                 if location:
                     self.cameras[cam_id]["location"] = location
                 self._save_cameras_to_disk()
-                if new_source.startswith("rtsp://") or new_source.startswith("http://") or new_source.isdigit() or new_source.startswith("/dev/video"):
+                if new_source.startswith("rtsp://") or new_source.startswith("rtsps://") or new_source.startswith("http://") or new_source.startswith("https://") or new_source.isdigit() or new_source.startswith("/dev/video"):
                     if new_source.startswith("/dev/video"):
                         try:
                             src = int(new_source.replace("/dev/video", ""))
@@ -398,7 +403,7 @@ class StreamManager:
             self._save_cameras_to_disk()
             
             src = cam_config.get("source", "")
-            if src.startswith("rtsp://") or src.startswith("http://") or src.isdigit() or src.startswith("/dev/video"):
+            if src.startswith("rtsp://") or src.startswith("rtsps://") or src.startswith("http://") or src.startswith("https://") or src.isdigit() or src.startswith("/dev/video"):
                 if src.startswith("/dev/video"):
                     try:
                         cap_src = int(src.replace("/dev/video", ""))
@@ -493,7 +498,8 @@ class StreamManager:
                 self.last_reconnect_time = t0
                 with self.lock:
                     for cid, ccfg in list(self.cameras.items()):
-                        if ccfg.get("type") == "usb_v4l2" and (cid not in self.captures or not self.captures[cid].isOpened()):
+                        # Autonomous auto-reconnect watchdog for physical USB and network IP/RTSP feeds
+                        if cid not in self.captures or not self.captures[cid].isOpened():
                             threading.Thread(target=self._safe_connect_camera, args=(cid, ccfg), daemon=True).start()
 
             with self.lock:
