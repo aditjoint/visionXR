@@ -78,9 +78,6 @@
       <button class="btn btn-compact btn-cyan" onclick="openUserGovernanceModal()" title="User Governance: Profiles, Clearance Levels, Password Management">
         <span class="btn-icon">👥</span> USERS
       </button>
-      <button class="btn btn-compact btn-danger" onclick="handleLogout()" title="Log Out & Lock Command Terminal">
-        <span class="btn-icon">🚪</span> LOGOUT
-      </button>
       <button class="btn btn-compact btn-warning" onclick="openSafetyRulesModal()" title="Super Admin Safety Rules: Thresholds for Workers & Objects">
         <span class="btn-icon">⚙️</span> RULES
       </button>
@@ -208,11 +205,10 @@
         <div class="view-controls" style="display: flex; gap: 0.25rem; align-items: center; flex-wrap: wrap;">
           <button id="btn-toggle-sidebar" class="btn btn-compact" onclick="toggleLeftSidebar()" title="Toggle Channels Sidebar (Expand Video Grid)">◀ CHANNELS</button>
           <button class="btn btn-compact btn-cyan" onclick="openProvisionModal()" title="Add / Provision Additional Camera Feed">➕ ADD FEED</button>
-          <button class="btn btn-compact" onclick="setLayout('grid-1x1')">1x1</button>
-          <button class="btn btn-compact" onclick="setLayout('grid-2x2')">2x2 QUAD</button>
-
-          <button class="btn btn-compact" onclick="setLayout('grid-3x3')">3x3</button>
-          <button class="btn btn-compact" onclick="setLayout('grid-auto')">AUTO</button>
+          <button id="btn-layout-1x1" class="btn btn-compact" onclick="setLayout('grid-1x1')">1x1</button>
+          <button id="btn-layout-2x2" class="btn btn-compact" onclick="setLayout('grid-2x2')">2x2 QUAD</button>
+          <button id="btn-layout-3x3" class="btn btn-compact" onclick="setLayout('grid-3x3')">3x3</button>
+          <button id="btn-layout-auto" class="btn btn-compact" onclick="setLayout('grid-auto')">AUTO</button>
           <button id="btn-toggle-editor" class="btn btn-compact btn-cyan" onclick="toggleZoneEditor()">📐 TRI-ZONES</button>
           <span id="zone-editor-controls" style="display: inline-flex; gap: 0.25rem; align-items: center;">
             <button id="btn-toolbar-green" class="btn btn-compact badge-green" onclick="setDrawType('green')" title="Draw Green Safe Corridor Zone">🟢 GREEN</button>
@@ -1515,7 +1511,7 @@
     </div>
   </div>
 
-  <script src="/static/js/app-v251.js?v=262"></script>
+  <script src="/static/js/app-v251.js?v=263"></script>
 </body>
 </html>
 

@@ -927,6 +927,20 @@ function setLayout(layout) {
     if (viewport) {
         viewport.className = `grid-viewport ${layout}`;
     }
+
+    ['grid-1x1', 'grid-2x2', 'grid-3x3', 'grid-auto'].forEach(l => {
+        const key = l.replace('grid-', '');
+        const btn = document.getElementById(`btn-layout-${key}`);
+        if (btn) {
+            if (l === layout) {
+                btn.classList.add('btn-cyan');
+                btn.style.boxShadow = '0 0 8px rgba(6, 182, 212, 0.4)';
+            } else {
+                btn.classList.remove('btn-cyan');
+                btn.style.boxShadow = 'none';
+            }
+        }
+    });
     
     // Setup canvas resolution
     CAM_CHANNELS.forEach(cid => {
