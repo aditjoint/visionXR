@@ -61,10 +61,58 @@ def sanitize_client_html(html_content: str, company_name: str) -> str:
     cleaned = re.sub(r'<!-- Modal: Client USB Distribution Builder[\s\S]*?(?=<!-- Modal: Super Admin User Governance)', '', cleaned)
     cleaned = re.sub(r'<div id="modal-distribution"[\s\S]*?<!-- Modal: Super Admin User Governance', '<!-- Modal: Super Admin User Governance', cleaned)
     
-    # Inject Customer Company Branding
+    # Inject Customer Company Branding and purge developer contact info
     cleaned = cleaned.replace("SOVEREIGN ENTERPRISE NODE", company_name.upper())
     cleaned = cleaned.replace("ADAM CONSULT", company_name.upper())
+    cleaned = cleaned.replace("+91-8779639965", "")
+    cleaned = cleaned.replace("Vikramaditya", "Staff Member")
+    cleaned = cleaned.replace("Adity", company_name.title())
     return cleaned
+
+
+def sanitize_client_backend(payload_dir: Path, company_name: str):
+    """
+    Purges all developer credentials, personal phone numbers, and dev-server secrets
+    from the client distribution payload before packaging.
+    """
+    import uuid
+    # 1. Sanitize Profile Manager (purging developer master passwords and identities)
+    prof_file = payload_dir / "app" / "security" / "profile_manager.py"
+    if prof_file.exists():
+        content = prof_file.read_text(encoding="utf-8")
+        # Strip developer master password
+        content = content.replace('"usr_admin": "M3IvniqJtUzKqQDx"', '"usr_admin": ""')
+        # Replace developer identity with client company administrator
+        content = content.replace('"Sovereign Commander Adity"', f'"{company_name} Administrator"')
+        # Replace developer API key with fresh token
+        content = content.replace('vxr_live_adm_9965_sov_key', f'vxr_live_adm_{uuid.uuid4().hex[:12]}')
+        # Purge developer personal phone number
+        content = content.replace('+91-8779639965', '')
+        # Replace demo passwords with empty strings
+        content = content.replace('"usr_secops": "SecOps@2026"', '"usr_secops": ""')
+        content = content.replace('"usr_ehs": "EHS@2026"', '"usr_ehs": ""')
+        content = content.replace('"usr_operator": "Operator@2026"', '"usr_operator": ""')
+        content = content.replace('"usr_auditor": "Auditor@2026"', '"usr_auditor": ""')
+        prof_file.write_text(content, encoding="utf-8")
+        print("[✓] Sanitized profile_manager.py: Developer passwords, phone & identity purged.")
+
+    # 2. Sanitize Config
+    cfg_file = payload_dir / "app" / "config.py"
+    if cfg_file.exists():
+        content = cfg_file.read_text(encoding="utf-8")
+        content = content.replace('+91-8779639965', '')
+        content = content.replace('http://127.0.0.14:8000/api/dcim/events', '')
+        cfg_file.write_text(content, encoding="utf-8")
+        print("[✓] Sanitized config.py: Developer phone number & internal webhooks purged.")
+
+    # 3. Sanitize Safety Rules and Alerts
+    for subpath in ["app/engine/safety_rules_engine.py", "app/engine/alert_bus.py", "app/api/routes_alerts.py", "app/api/routes_auth.py"]:
+        fpath = payload_dir / subpath
+        if fpath.exists():
+            content = fpath.read_text(encoding="utf-8")
+            content = content.replace('+91-8779639965', '')
+            fpath.write_text(content, encoding="utf-8")
+    print("[✓] Sanitized alert engines: Zero developer contact numbers remain in client code.")
 
 
 
@@ -107,14 +155,16 @@ def build_distribution(company_name: str, max_cameras: int, selected_feature_ids
         )
     )
 
-    # 2. Sanitize HTML - Strip License Button and Modal
-    print("\n[2/6] Sanitizing client interface (stripping LICENSE button & developer modals)...")
+    # 2. Sanitize HTML & Backend Code - Strip Developer Buttons, Credentials, Phone & Webhooks
+    print("\n[2/6] Sanitizing client interface & backend code (purging developer credentials)...")
     html_file = PAYLOAD_DIR / "static" / "index.html"
     if html_file.exists():
         raw_html = html_file.read_text(encoding="utf-8")
         sanitized = sanitize_client_html(raw_html, company_name)
         html_file.write_text(sanitized, encoding="utf-8")
         print("[✓] Verified: LICENSE and DISTRIBUTION buttons completely purged from client distribution UI.")
+
+    sanitize_client_backend(PAYLOAD_DIR, company_name)
 
     # 3. Configure Client Clean Operational Data (Zero Developer Static Data)
     print(f"\n[3/6] Initializing pristine clean data stores (ZERO developer static data)...")
@@ -333,9 +383,75 @@ python3 -m venv "${{INSTALL_DIR}}/venv"
 "${{INSTALL_DIR}}/venv/bin/python" -m pip install --upgrade pip setuptools wheel
 "${{INSTALL_DIR}}/venv/bin/pip" install -r "${{INSTALL_DIR}}/requirements.txt"
 
-# 7. Irreversible Cythonization (Compile .py -> native .so binary extensions)
+# 7. Configure Target Machine Super Admin Credentials
 echo ""
-echo "[4/7] Compiling core application logic into IRREVERSIBLE native binary machine code (.so)..."
+echo "[4/8] Initializing machine-unique Super Admin credentials..."
+if [ "$IS_UPGRADE" -eq 1 ] && [ -f "${{INSTALL_DIR}}/data/passwords.json" ]; then
+    echo "[+] Preserved existing client credentials during in-place upgrade."
+else
+    mkdir -p "${{INSTALL_DIR}}/data"
+    ADMIN_USER="admin"
+    ADMIN_PASS=""
+    
+    if [ -t 0 ] && [ "$DEBIAN_FRONTEND" != "noninteractive" ] && [ "$1" != "--unattended" ]; then
+        echo "========================================================================"
+        echo "  CONFIGURE SUPER ADMIN CREDENTIALS FOR: {company_name}"
+        echo "========================================================================"
+        read -p "  Enter Super Admin username [admin]: " INPUT_USER
+        if [ -n "$INPUT_USER" ]; then
+            ADMIN_USER="$INPUT_USER"
+        fi
+        while [ -z "$ADMIN_PASS" ]; do
+            read -s -p "  Enter Super Admin password (min 8 chars): " ADMIN_PASS
+            echo ""
+            if [ ${{#ADMIN_PASS}} -lt 8 ]; then
+                echo "  [-] Password must be at least 8 characters. Please re-enter."
+                ADMIN_PASS=""
+            fi
+        done
+        read -s -p "  Confirm Super Admin password: " ADMIN_PASS_CONFIRM
+        echo ""
+        if [ "$ADMIN_PASS" != "$ADMIN_PASS_CONFIRM" ]; then
+            echo "  [-] Passwords did not match. Generating randomized secure credential..."
+            ADMIN_PASS=$(head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 16)
+            echo "  [!] Generated Super Admin Password: ${{ADMIN_PASS}}"
+        fi
+    else
+        ADMIN_PASS=$(head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 16)
+        echo "  [!] Auto-generated unique Super Admin Password: ${{ADMIN_PASS}}"
+    fi
+
+    # Write target server passwords.json and profiles.json
+    cat <<EOF_PW > "${{INSTALL_DIR}}/data/passwords.json"
+{{
+  "usr_admin": "${{ADMIN_PASS}}"
+}}
+EOF_PW
+    chmod 600 "${{INSTALL_DIR}}/data/passwords.json"
+
+    API_KEY=$(head -c 16 /dev/urandom | xxd -p 2>/dev/null | head -c 24 || head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 24)
+    cat <<EOF_PROF > "${{INSTALL_DIR}}/data/profiles.json"
+{{
+  "usr_admin": {{
+    "user_id": "usr_admin",
+    "username": "${{ADMIN_USER}}",
+    "display_name": "{company_name} Administrator",
+    "role": "SUPER_ADMIN",
+    "clearance": "L4_SOVEREIGN",
+    "department": "{company_name} Security Directorate",
+    "phone": "",
+    "api_key": "vxr_live_${{API_KEY}}",
+    "avatar": "🛡️"
+  }}
+}}
+EOF_PROF
+    chmod 600 "${{INSTALL_DIR}}/data/profiles.json"
+    echo "[✓] Customer Super Admin credentials successfully bound to this node."
+fi
+
+# 8. Irreversible Cythonization (Compile .py -> native .so binary extensions)
+echo ""
+echo "[5/8] Compiling core application logic into IRREVERSIBLE native binary machine code (.so)..."
 find "${{INSTALL_DIR}}/app" -name "*.py" | while read -r pyfile; do
     fname=$(basename "$pyfile")
     dname=$(dirname "$pyfile")

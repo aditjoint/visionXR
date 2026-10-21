@@ -11,7 +11,7 @@ class DisasterTriggerRequest(BaseModel):
     disaster_type: str = "ACID_FUMING_SPILL" # ACID_FUMING_SPILL, TOXIC_GAS_PLUME, PIPE_BURST_FLOOD, THERMAL_RUNAWAY, CRYOGENIC_FREEZE_LEAK, BIOHAZARD_SPOILAGE
 
 class ESDResetRequest(BaseModel):
-    actor: str = "Chief Safety Officer Adity"
+    actor: str = "Chief Safety Officer"
 
 @router.get("/status")
 def get_industrial_status():
