@@ -241,23 +241,42 @@ SCRIPT_DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
 INSTALL_DIR="/opt/visionxr"
 STORAGE_DIR="/var/visionxr_storage"
 
-# 3. DUPLICATE INSTALLATION GUARD
+# 3. DUPLICATE INSTALLATION & IN-PLACE UPGRADE DETECTOR
+IS_UPGRADE=0
 if [ -d "${{INSTALL_DIR}}" ] && [ "$(ls -A ${{INSTALL_DIR}} 2>/dev/null)" ]; then
     echo "========================================================================"
-    echo "[-] ABORT: An active installation of VisionXR is already present at ${{INSTALL_DIR}}."
-    echo "    Multiple parallel installations are blocked to prevent hardware locking conflicts."
-    echo "    To reinstall or upgrade, please deprovision/uninstall the existing deployment first."
+    echo "[!] EXISTING DEPLOYMENT DETECTED at ${{INSTALL_DIR}}"
     echo "========================================================================"
-    exit 1
+    echo "    VisionXR is already installed on this machine."
+    echo "    This installer can safely UPGRADE the existing installation in-place,"
+    echo "    preserving all customer camera channels, zones, biometrics & data."
+    echo ""
+    if [ "$1" = "--upgrade" ] || [ "$1" = "-y" ] || [ "$1" = "--yes" ]; then
+        UPGRADE_CHOICE="Y"
+    else
+        read -p "    Proceed with IN-PLACE UPGRADE? [Y/n]: " UPGRADE_CHOICE
+        UPGRADE_CHOICE=${{UPGRADE_CHOICE:-Y}}
+    fi
+    if [[ "$UPGRADE_CHOICE" =~ ^[Yy]$ ]]; then
+        echo "[+] Proceeding with IN-PLACE UPGRADE mode..."
+        IS_UPGRADE=1
+    else
+        echo "[-] Installation cancelled by operator to avoid duplicate conflicts."
+        exit 1
+    fi
 fi
 
 if systemctl is-active --quiet visionxr.service 2>/dev/null; then
-    echo "[-] ABORT: visionxr.service is currently running on this system."
-    exit 1
+    echo "[+] Stopping active visionxr.service for safe binary upgrade..."
+    systemctl stop visionxr.service || true
 fi
 
 echo "========================================================================"
-echo "    VISIONXR INDUSTRIAL PRODUCTION DEPLOYMENT"
+if [ "$IS_UPGRADE" -eq 1 ]; then
+    echo "    VISIONXR INDUSTRIAL PRODUCTION IN-PLACE UPGRADE"
+else
+    echo "    VISIONXR INDUSTRIAL PRODUCTION DEPLOYMENT"
+fi
 echo "    Customer Node : {company_name}"
 echo "    Target Path   : ${{INSTALL_DIR}}"
 echo "========================================================================"
@@ -282,8 +301,27 @@ apt-get install -y --no-install-recommends \
 # 5. Deploy Payload Files
 echo ""
 echo "[2/7] Deploying application payload to ${{INSTALL_DIR}}..."
-mkdir -p "${{INSTALL_DIR}}"
-cp -r "${{SCRIPT_DIR}}/payload"/* "${{INSTALL_DIR}}/"
+if [ "$IS_UPGRADE" -eq 1 ]; then
+    echo "[+] Preserving customer data: Backing up operational stores..."
+    UPGRADE_BACKUP="/tmp/visionxr_upgrade_backup_$$"
+    mkdir -p "${{UPGRADE_BACKUP}}"
+    cp -r "${{INSTALL_DIR}}/data" "${{UPGRADE_BACKUP}}/" 2>/dev/null || true
+    cp "${{INSTALL_DIR}}/developer.license" "${{UPGRADE_BACKUP}}/" 2>/dev/null || true
+
+    # Copy new application engine and frontend
+    cp -r "${{SCRIPT_DIR}}/payload/app" "${{INSTALL_DIR}}/"
+    cp -r "${{SCRIPT_DIR}}/payload/static" "${{INSTALL_DIR}}/"
+    cp "${{SCRIPT_DIR}}/payload/requirements.txt" "${{INSTALL_DIR}}/"
+
+    # Restore customer data (never overwrite existing client cameras or records)
+    echo "[+] Restoring customer cameras, spatial zones, biometrics & audit trail..."
+    mkdir -p "${{INSTALL_DIR}}/data"
+    cp -rn "${{UPGRADE_BACKUP}}/data"/* "${{INSTALL_DIR}}/data/" 2>/dev/null || true
+    rm -rf "${{UPGRADE_BACKUP}}"
+else
+    mkdir -p "${{INSTALL_DIR}}"
+    cp -r "${{SCRIPT_DIR}}/payload"/* "${{INSTALL_DIR}}/"
+fi
 
 mkdir -p "${{STORAGE_DIR}}/snapshots" "${{STORAGE_DIR}}/recordings" "${{STORAGE_DIR}}/audit"
 chmod -R 775 "${{STORAGE_DIR}}"
